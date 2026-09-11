@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --color-midnight-black: var(--midnight-black);
+  --color-titanium-silver: var(--titanium-silver);
+  --color-steel-blue: var(--steel-blue);
+  --color-champagne-gold: var(--champagne-gold);
+  --color-headline-white: var(--headline-white);
+
+  --font-sans: var(--font-space), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-cinzel), Georgia, serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+:root {
+  --midnight-black: #0D0D0D;   /* primary background */
+  --titanium-silver: #8B8D91;  /* secondary surfaces, dividers, body text on dark */
+  --steel-blue: #2C3946;       /* card/panel backgrounds, section transitions */
+  --champagne-gold: #C2A472;   /* accent — CTAs, hairlines, hover states, key highlights */
+  --headline-white: #F5F4F2;   /* near-white for headline text on black */
+
+  --background: var(--midnight-black);
+  --foreground: var(--headline-white);
+}
+
+html {
+  color-scheme: dark;
+  background-color: var(--midnight-black);
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+body {
+  background-color: var(--midnight-black);
+  color: var(--headline-white);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--champagne-gold);
+  color: var(--midnight-black);
+}
+
+/* Custom luxury scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--midnight-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--steel-blue);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--champagne-gold);
+}
+
+/* Luxury Editorial Headings: Headline-white to champagne-gold letterform gradient */
+.heading-editorial {
+  background: linear-gradient(180deg, var(--headline-white) 45%, var(--champagne-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--champagne-gold) 18%, transparent);
+}
+
+/* Champagne gold text glow */
+.text-gold-glow {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--champagne-gold) 25%, transparent);
+}
+
+/* Champagne Gold Luxury Button */
+.btn-gold-luxury {
+  background: var(--champagne-gold);
+  color: var(--midnight-black);
+  font-weight: 600;
+  border: 1px solid var(--champagne-gold);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--champagne-gold) 20%, transparent);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-gold-luxury:hover {
+  background: color-mix(in srgb, var(--champagne-gold) 90%, var(--headline-white));
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--champagne-gold) 35%, transparent);
+  transform: translateY(-2px);
+}
+
+/* Champagne Gold Outline Button */
+.btn-gold-outline {
+  border: 1px solid color-mix(in srgb, var(--champagne-gold) 45%, transparent);
+  color: var(--headline-white);
+  background: color-mix(in srgb, var(--midnight-black) 60%, transparent);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-gold-outline:hover {
+  border-color: var(--champagne-gold);
+  color: var(--champagne-gold);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--champagne-gold) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Gold border with soft glow */
+.gold-gradient-border {
+  border: 1px solid transparent;
+  background-image: linear-gradient(var(--midnight-black), var(--midnight-black)),
+    linear-gradient(135deg, var(--champagne-gold) 0%, color-mix(in srgb, var(--steel-blue) 60%, transparent) 50%, color-mix(in srgb, var(--champagne-gold) 30%, transparent) 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Minimal Crystal-Clear Navigation */
+.glass-nav {
+  background: rgba(13, 13, 13, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(139, 141, 145, 0.15);
+}
+
+/* Minimal Crystal-Clear Luxury Card / Panel */
+.panel-luxury {
+  background: rgba(13, 13, 13, 0.94);
+  border: 1px solid rgba(194, 164, 114, 0.22);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+}
+
+.eyebrow-luxury {
+  color: var(--champagne-gold);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
