@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# local Git worktrees
+/.worktrees/
+
 # production
 /build
 
@@ -48,4 +51,3 @@ public/exploded watch combining/
 public/macro craftsmanship/
 public/mechanical wrist watch rotating/
 public/three_mechanical_watches/
-
