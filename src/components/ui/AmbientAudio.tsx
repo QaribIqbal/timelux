@@ -129,7 +129,7 @@ export default function AmbientAudio() {
     <>
       <audio
         ref={audioRef}
-        src="/audio/watch-background-audio-loop.wav"
+        src="/audio/watch-background-audio-loop.mp3"
         loop
         autoPlay
         playsInline
@@ -150,7 +150,7 @@ export default function AmbientAudio() {
           }
         }}
       >
-        <source src="/audio/watch-background-audio-loop.wav" type="audio/wav" />
+        <source src="/audio/watch-background-audio-loop.mp3" type="audio/mpeg" />
       </audio>
 
       <button
