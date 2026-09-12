@@ -2,33 +2,71 @@
 
 import React, { useEffect, useState } from "react";
 
-export default function LuxuryPreloader() {
+interface LuxuryPreloaderProps {
+  isHeroReady?: boolean;
+}
+
+export default function LuxuryPreloader({
+  isHeroReady = false,
+}: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);
+  const [posterLoaded, setPosterLoaded] = useState(false);
+  const [safetyTimedOut, setSafetyTimedOut] = useState(false);
+
+  // Preload critical 4K Lossless WebP hero poster and showcase models
+  useEffect(() => {
+    const heroPoster = new Image();
+    heroPoster.src = "/videos/posters/01-hero-4k-rotation.webp";
+    heroPoster.onload = () => setPosterLoaded(true);
+    heroPoster.onerror = () => setPosterLoaded(true);
+
+    const w1 = new Image();
+    w1.src = "/watches/model-1-monolith.webp";
+    const w2 = new Image();
+    w2.src = "/watches/model-2-steel-blue.webp";
+    const w3 = new Image();
+    w3.src = "/watches/model-3-gold-atelier.webp";
+
+    // Safety timeout: Never keep the atelier permanently locked if offline or media blocked
+    const fallbackTimer = setTimeout(() => {
+      setSafetyTimedOut(true);
+    }, 4500);
+
+    return () => clearTimeout(fallbackTimer);
+  }, []);
+
+  const isActuallyReady = (isHeroReady && posterLoaded) || safetyTimedOut;
 
   useEffect(() => {
-    // Smooth progress counter simulating precision calibration
     const interval = setInterval(() => {
       setLoadingProgress((prev) => {
+        // If hero media is still loading over the network, smoothly hold at 88%
+        if (!isActuallyReady && prev >= 88) {
+          return 88;
+        }
         if (prev >= 100) {
           clearInterval(interval);
           return 100;
         }
-        const step = Math.floor(Math.random() * 8) + 4;
+        // Accelerate when actually ready, otherwise advance steadily
+        const step = isActuallyReady
+          ? Math.floor(Math.random() * 8) + 6
+          : Math.floor(Math.random() * 5) + 3;
         return Math.min(100, prev + step);
       });
-    }, 45);
+    }, 40);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isActuallyReady]);
 
   useEffect(() => {
     if (loadingProgress >= 100) {
       const timer = setTimeout(() => {
         setIsDone(true);
-        setTimeout(() => setIsUnmounted(true), 900);
-      }, 300);
+        setTimeout(() => setIsUnmounted(true), 800);
+      }, 250);
       return () => clearTimeout(timer);
     }
   }, [loadingProgress]);

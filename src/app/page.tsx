@@ -17,6 +17,7 @@ export default function Home() {
   const [preselectedModel, setPreselectedModel] = useState<string | undefined>(
     undefined
   );
+  const [isHeroReady, setIsHeroReady] = useState(false);
 
   const handleSelectModel = (modelName: string) => {
     setPreselectedModel(modelName);
@@ -27,8 +28,8 @@ export default function Home() {
     <main className="relative min-h-screen bg-[var(--midnight-black)] text-[var(--headline-white)]">
       <AmbientAudio />
 
-      {/* Luxury Horology Preloader */}
-      <LuxuryPreloader />
+      {/* Luxury Horology Preloader linked directly to real hero media readiness */}
+      <LuxuryPreloader isHeroReady={isHeroReady} />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
       <Navbar
@@ -45,6 +46,7 @@ export default function Home() {
       <MasterScrollySection
         onOpenMechanism={() => setIsMechanismOpen(true)}
         onOpenCommission={() => setIsCommissionOpen(true)}
+        onHeroReady={() => setIsHeroReady(true)}
       />
 
       {/* SECTION 5: THE COLLECTION — CHOOSE YOUR EXPRESSION (Normal Scroll) */}

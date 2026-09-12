@@ -17,7 +17,7 @@ export default function CraftsmanshipSection({ onOpenCommission }: Craftsmanship
       <div className="absolute inset-0 opacity-25 pointer-events-none flex items-center justify-center">
         <video
           src="/videos/07-macro-craftsmanship.mp4"
-          poster="/videos/posters/07-macro-craftsmanship.jpg"
+          poster="/videos/posters/07-macro-craftsmanship.webp"
           autoPlay
           loop
           muted

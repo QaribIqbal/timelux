@@ -17,13 +17,14 @@ interface VideoCanvasScrubberProps {
   progress: number; // 0.0 to 1.0
   className?: string;
   onActiveBeatChange?: (beatIndex: number) => void;
+  onHeroReady?: () => void;
 }
 
 export const PINNED_BEATS: VideoBeatConfig[] = [
   {
     id: "hero",
     src: "/videos/01-hero-4k-rotation.mp4",
-    poster: "/videos/posters/01-hero-4k-rotation.jpg",
+    poster: "/videos/posters/01-hero-4k-rotation.webp",
     fps: 30,
     duration: 7.97,
     startProgress: 0.0,
@@ -33,7 +34,7 @@ export const PINNED_BEATS: VideoBeatConfig[] = [
   {
     id: "geometry",
     src: "/videos/02-case-geometry-rotation.mp4",
-    poster: "/videos/posters/02-case-geometry-rotation.jpg",
+    poster: "/videos/posters/02-case-geometry-rotation.webp",
     fps: 30,
     duration: 7.97,
     startProgress: 0.20,
@@ -43,7 +44,7 @@ export const PINNED_BEATS: VideoBeatConfig[] = [
   {
     id: "exploded",
     src: "/videos/03-exploded-deconstruction.mp4",
-    poster: "/videos/posters/03-exploded-deconstruction.jpg",
+    poster: "/videos/posters/03-exploded-deconstruction.webp",
     fps: 30,
     duration: 9.97,
     startProgress: 0.40,
@@ -53,7 +54,7 @@ export const PINNED_BEATS: VideoBeatConfig[] = [
   {
     id: "movement",
     src: "/videos/04-movement-gears-4k.mp4",
-    poster: "/videos/posters/04-movement-gears-4k.jpg",
+    poster: "/videos/posters/04-movement-gears-4k.webp",
     fps: 30,
     duration: 9.97,
     startProgress: 0.65,
@@ -63,7 +64,7 @@ export const PINNED_BEATS: VideoBeatConfig[] = [
   {
     id: "reassembly",
     src: "/videos/05-timepiece-reassembly.mp4",
-    poster: "/videos/posters/05-timepiece-reassembly.jpg",
+    poster: "/videos/posters/05-timepiece-reassembly.webp",
     fps: 30,
     duration: 9.97,
     startProgress: 0.85,
@@ -76,6 +77,7 @@ export default function VideoCanvasScrubber({
   progress,
   className = "",
   onActiveBeatChange,
+  onHeroReady,
 }: VideoCanvasScrubberProps) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [readyStates, setReadyStates] = useState<boolean[]>(
@@ -113,7 +115,23 @@ export default function VideoCanvasScrubber({
       updated[index] = true;
       return updated;
     });
-  }, []);
+    if (index === 0) {
+      onHeroReady?.();
+    }
+  }, [onHeroReady]);
+
+  // Actively poll hero video on mount to signal readiness as soon as data arrives
+  useEffect(() => {
+    const checkHero = () => {
+      const v0 = videoRefs.current[0];
+      if (v0 && v0.readyState >= 2) {
+        handleReady(0);
+      }
+    };
+    checkHero();
+    const timer = setInterval(checkHero, 80);
+    return () => clearInterval(timer);
+  }, [handleReady]);
 
   const handleSeeked = useCallback((index: number) => {
     isSeekingRefs.current[index] = false;

@@ -90,7 +90,7 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
       name: "Monolith Chronograph",
       limitation: "50 Pieces Worldwide",
       material: "Grade 5 Titanium · Skeleton Dial",
-      image: "/watches/model-1-monolith.png",
+      image: "/watches/model-1-monolith.webp",
       description:
         "Engineered for uncompromising resilience. Features an openworked dial displaying the column-wheel chronograph mechanism with hand-beveled anglage.",
       calibre: "Calibre TLX-01 Automatic",
@@ -108,7 +108,7 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
       name: "Steel-Blue Tourbillon",
       limitation: "25 Pieces Worldwide",
       material: "Ceramic Bezel · DLC Titanium",
-      image: "/watches/model-2-steel-blue.png",
+      image: "/watches/model-2-steel-blue.webp",
       description:
         "A pinnacle of chronometric mastery. The one-minute flying tourbillon at 6 o'clock defies gravitational forces, encased in maritime steel-blue DLC.",
       calibre: "Calibre TLX-02 Tourbillon",
@@ -126,7 +126,7 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
       name: "Grand Champagne Atelier",
       limitation: "10 Pieces Worldwide",
       material: "18K Champagne Gold · Exhibition Back",
-      image: "/watches/model-3-gold-atelier.png",
+      image: "/watches/model-3-gold-atelier.webp",
       description:
         "The ultimate expression of bespoke Swiss horology. Individually numbered, hand-polished bridges, and a pure Grand Feu dial crafted in our Geneva atelier.",
       calibre: "Calibre TLX-03 Chronometer",
@@ -167,7 +167,7 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
           <video
             ref={collectionVideoRef}
             src="/videos/06-three-watch-collection.mp4"
-            poster="/videos/posters/06-three-watch-collection.jpg"
+            poster="/videos/posters/06-three-watch-collection.webp"
             autoPlay
             loop
             muted
