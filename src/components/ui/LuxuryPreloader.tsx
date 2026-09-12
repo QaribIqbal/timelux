@@ -1,63 +1,61 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HERO_BEATS } from "@/lib/heroAssets";
-import { HERO_MEDIA_COUNT, HERO_READY_THRESHOLD, isHeroReadyForEntry } from "@/lib/heroLoading";
+import { isHeroReadyForEntry } from "@/lib/heroLoading";
 
 interface LuxuryPreloaderProps {
-  isHeroReady?: boolean;
   readyHeroVideos?: number;
 }
 
-export default function LuxuryPreloader({
-  isHeroReady = false,
-  readyHeroVideos = 0,
-}: LuxuryPreloaderProps) {
+export default function LuxuryPreloader({ readyHeroVideos = 0 }: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);
-  const [loadedPosterCount, setLoadedPosterCount] = useState(0);
-  const [safetyTimedOut, setSafetyTimedOut] = useState(false);
-  const completedMediaRef = useRef(new Set<string>());
+  const [readyHeroPosters, setReadyHeroPosters] = useState(0);
 
   useEffect(() => {
     let isCancelled = false;
-    const markReady = (key: string) => {
-      if (isCancelled || completedMediaRef.current.has(key)) return;
-      completedMediaRef.current.add(key);
-      setLoadedPosterCount((count) => count + 1);
+    const loadedPosters = new Set<string>();
+    const markReady = (poster: string) => {
+      if (isCancelled || loadedPosters.has(poster)) return;
+      loadedPosters.add(poster);
+      setReadyHeroPosters(loadedPosters.size);
     };
 
     HERO_BEATS.forEach(([, , poster]) => {
       const image = new Image();
-      image.onload = () => markReady(`poster:${poster}`);
-      image.onerror = () => markReady(`poster:${poster}`);
+      image.onload = () => {
+        if (typeof image.decode === "function") {
+          void image.decode().then(() => markReady(poster), () => markReady(poster));
+        } else {
+          markReady(poster);
+        }
+      };
+      image.onerror = () => markReady(poster);
       image.src = poster;
-      if (image.complete && typeof image.decode === "function") {
-        void image.decode().then(
-          () => markReady(`poster:${poster}`),
-          () => markReady(`poster:${poster}`)
-        );
-      }
-
     });
-
-    const fallbackTimer = setTimeout(() => {
-      if (!isCancelled) setSafetyTimedOut(true);
-    }, 35000);
 
     return () => {
       isCancelled = true;
-      clearTimeout(fallbackTimer);
     };
   }, []);
 
-  const loadedCount = loadedPosterCount + Math.min(HERO_BEATS.length, readyHeroVideos);
-  const isFullyCalibrated =
-    isHeroReadyForEntry(loadedCount, isHeroReady) || safetyTimedOut;
+  const isFullyCalibrated = isHeroReadyForEntry(
+    readyHeroPosters,
+    readyHeroVideos,
+    HERO_BEATS.length
+  );
   const targetProgress = isFullyCalibrated
     ? 100
-    : Math.min(90, Math.floor((loadedCount / HERO_MEDIA_COUNT) * 100));
+    : Math.min(
+        99,
+        Math.round(
+          ((readyHeroPosters + Math.min(readyHeroVideos, HERO_BEATS.length)) /
+            (HERO_BEATS.length * 2)) *
+            100
+        )
+      );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,10 +64,7 @@ export default function LuxuryPreloader({
           clearInterval(interval);
           return previous;
         }
-        return Math.min(
-          targetProgress,
-          previous + Math.max(1, Math.min(3, targetProgress - previous))
-        );
+        return Math.min(targetProgress, previous + Math.max(1, Math.min(3, targetProgress - previous)));
       });
     }, 35);
     return () => clearInterval(interval);
@@ -95,7 +90,6 @@ export default function LuxuryPreloader({
         <span>HAUTE HORLOGERIE SUISSE</span>
         <span className="text-[var(--champagne-gold)]">LIMITED RELEASE // 2026</span>
       </div>
-
       <div className="flex flex-col items-center text-center">
         <div className="relative w-28 h-28 sm:w-36 sm:h-36 mb-8 flex items-center justify-center">
           <div className="absolute inset-0 rounded-full border border-[var(--titanium-silver)]/15 animate-[spin_12s_linear_infinite]" />
@@ -107,7 +101,6 @@ export default function LuxuryPreloader({
         <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-[0.35em] text-[var(--headline-white)]">TIMELUX</h1>
         <p className="mt-3 text-[10px] sm:text-xs font-mono uppercase tracking-[0.25em] text-[var(--champagne-gold)]">CALIBRATING ATELIER · 28,800 VPH</p>
       </div>
-
       <div className="w-full max-w-sm flex flex-col items-center gap-3">
         <div className="w-full h-[1.5px] bg-[var(--steel-blue)]/40 overflow-hidden relative">
           <div className="h-full bg-[var(--champagne-gold)] transition-all duration-150 ease-out" style={{ width: `${loadingProgress}%` }} />
@@ -116,7 +109,6 @@ export default function LuxuryPreloader({
           <span className="uppercase tracking-widest">SYNCHRONIZING</span>
           <span className="tabular-nums font-bold text-[var(--champagne-gold)]">{loadingProgress.toString().padStart(2, "0")}%</span>
         </div>
-        <span className="text-[9px] font-mono uppercase tracking-widest text-[var(--titanium-silver)]/60">{loadedCount}/{HERO_READY_THRESHOLD} media calibrated</span>
       </div>
     </div>
   );

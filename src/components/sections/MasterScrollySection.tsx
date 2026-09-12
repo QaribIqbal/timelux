@@ -7,14 +7,12 @@ import { ArrowRight, Play } from "lucide-react";
 interface MasterScrollySectionProps {
   onOpenMechanism: () => void;
   onOpenCommission: () => void;
-  onHeroReady?: () => void;
   onHeroMediaReady?: (beatIndex: number) => void;
 }
 
 export default function MasterScrollySection({
   onOpenMechanism,
   onOpenCommission,
-  onHeroReady,
   onHeroMediaReady,
 }: MasterScrollySectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -94,7 +92,6 @@ export default function MasterScrollySection({
           <VideoCanvasScrubber
             progress={scrollProgress}
             onActiveBeatChange={setActiveBeat}
-            onHeroReady={onHeroReady}
             onHeroMediaReady={onHeroMediaReady}
           />
         </div>
@@ -108,7 +105,7 @@ export default function MasterScrollySection({
           }}
         />
 
-        {/* ── BEAT 1: HERO (0% – 20%) — 4K Hero Beauty Rotation (public/hero: 239 frames) ── */}
+        {/* ── BEAT 1: HERO (0% – 20%) — 4K Hero Beauty Rotation ── */}
         <div
           className="absolute inset-0 z-20 flex flex-col justify-between pt-24 pb-10 px-6 sm:px-16 select-none"
           style={beatStyle(isHero, "-12px")}
@@ -153,7 +150,7 @@ export default function MasterScrollySection({
           </div>
         </div>
 
-        {/* ── BEAT 2: 360° CASE GEOMETRY (20% – 40%) — (public/mechanical wrist watch rotating: 239 frames) ── */}
+        {/* ── BEAT 2: 360° CASE GEOMETRY (20% – 40%) ── */}
         <div
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none"
           style={beatStyle(isGeometry)}
@@ -196,7 +193,7 @@ export default function MasterScrollySection({
           </div>
         </div>
 
-        {/* ── BEAT 3: EXPLODED VIEW (40% – 65%) — (public/watch componenet seprating: ALL 299 frames) ── */}
+        {/* ── BEAT 3: EXPLODED VIEW (40% – 65%) ── */}
         <div
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none flex justify-end"
           style={beatStyle(isExploded)}
@@ -239,7 +236,7 @@ export default function MasterScrollySection({
           </div>
         </div>
 
-        {/* ── BEAT 4: CALIBRE TLX-01 4K CORE ENGINE (65% – 85%) — (public/watch gears moving: ALL 299 frames, 4K) ── */}
+        {/* ── BEAT 4: CALIBRE TLX-01 4K CORE ENGINE (65% – 85%) ── */}
         <div
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none"
           style={beatStyle(isMovement)}
@@ -282,7 +279,7 @@ export default function MasterScrollySection({
           </div>
         </div>
 
-        {/* ── BEAT 5: TIMEPIECE REASSEMBLY (85% – 100%) — (public/exploded watch combining: ALL 299 frames) ── */}
+        {/* ── BEAT 5: TIMEPIECE REASSEMBLY (85% – 100%) ── */}
         <div
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none"
           style={beatStyle(isReassembly)}

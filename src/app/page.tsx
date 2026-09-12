@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { HERO_BEATS } from "@/lib/heroAssets";
 import LuxuryPreloader from "@/components/ui/LuxuryPreloader";
 import Navbar from "@/components/ui/Navbar";
 import MasterScrollySection from "@/components/sections/MasterScrollySection";
@@ -17,7 +18,6 @@ export default function Home() {
   const [preselectedModel, setPreselectedModel] = useState<string | undefined>(
     undefined
   );
-  const [isHeroReady, setIsHeroReady] = useState(false);
   const [readyHeroVideos, setReadyHeroVideos] = useState(0);
 
   const handleSelectModel = (modelName: string) => {
@@ -30,10 +30,7 @@ export default function Home() {
       <AmbientAudio />
 
       {/* Luxury Horology Preloader linked directly to real hero media readiness */}
-      <LuxuryPreloader
-        isHeroReady={isHeroReady}
-        readyHeroVideos={readyHeroVideos}
-      />
+      <LuxuryPreloader readyHeroVideos={readyHeroVideos} />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
       <Navbar
@@ -41,17 +38,13 @@ export default function Home() {
         onOpenMechanism={() => setIsMechanismOpen(true)}
       />
 
-      {/* CORE INTERACTION: SCROLL-LINKED IMAGE SEQUENCE (400vh Pinned Canvas)
-          - Beat 1 (0–15%): Hero Beauty Shot (Precision is the Ultimate Luxury)
-          - Beat 2 (15–40%): The Exploded View (Beauty is Nothing Without Alignment)
-          - Beat 3 (40–75%): Layer-by-Layer Inspection (Sapphire UI, Calibrated Movement, DevOps Shield)
-          - Beat 4 (75–100%): Reassembly & Strong CTA (Systems Built to Endure / TEST THE MECHANISM)
-      */}
+      {/* CORE INTERACTION: SCROLL-LINKED HERO VIDEO SEQUENCE */}
       <MasterScrollySection
         onOpenMechanism={() => setIsMechanismOpen(true)}
         onOpenCommission={() => setIsCommissionOpen(true)}
-        onHeroReady={() => setIsHeroReady(true)}
-        onHeroMediaReady={() => setReadyHeroVideos((count) => count + 1)}
+        onHeroMediaReady={() =>
+          setReadyHeroVideos((previous) => Math.min(HERO_BEATS.length, previous + 1))
+        }
       />
 
       {/* SECTION 5: THE COLLECTION — CHOOSE YOUR EXPRESSION (Normal Scroll) */}

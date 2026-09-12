@@ -57,6 +57,7 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const collectionVideoRef = useRef<HTMLVideoElement>(null);
   const collectionVideoInViewRef = useRef(false);
+  const collectionVideoLoadedRef = useRef(false);
 
   useEffect(() => {
     const video = collectionVideoRef.current;
@@ -66,6 +67,11 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
       ([entry]) => {
         collectionVideoInViewRef.current = entry.isIntersecting;
         if (entry.isIntersecting) {
+          if (!collectionVideoLoadedRef.current) {
+            collectionVideoLoadedRef.current = true;
+            video.preload = "auto";
+            video.load();
+          }
           void video.play().catch(() => {
             // Browser autoplay policy may require a user gesture.
           });
@@ -166,13 +172,13 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
         <div className="relative w-full max-w-4xl mx-auto h-[320px] sm:h-[440px] rounded-2xl overflow-hidden mb-16 border border-[var(--champagne-gold)]/30 bg-[var(--midnight-black)]">
           <video
             ref={collectionVideoRef}
-            src="/videos/06-three-watch-collection.mp4"
-            poster="/videos/posters/06-three-watch-collection.webp"
+            src="/videos/06-three-watch-collection.76bdaf35.mp4"
+            poster="/videos/posters/06-three-watch-collection.c0ee4e9f.webp"
             autoPlay
             loop
             muted
             playsInline
-            preload="auto"
+            preload="none"
             onCanPlay={() => {
               if (collectionVideoInViewRef.current) {
                 void collectionVideoRef.current?.play().catch(() => undefined);
