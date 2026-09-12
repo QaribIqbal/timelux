@@ -40,8 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# raw source frame folders and large video binaries
-public/videos/*.mp4
+# raw source frame folders
 public/hero/
 public/watch gears moving/
 public/watch componenet seprating/
