@@ -8,6 +8,14 @@ export interface FrameSequence {
   filter?: string;
 }
 
+export const FRAME_CACHE_LIMIT = 8;
+export const FRAME_PREFETCH_RADIUS = 4;
+export const MAX_BACKGROUND_FRAME_LOADS = 3;
+
+export function getScrollDirection(currentProgress: number, previousProgress: number): -1 | 1 {
+  return currentProgress < previousProgress ? -1 : 1;
+}
+
 export function getFrameIndex(sequence: FrameSequence, progress: number) {
   const range = sequence.endProgress - sequence.startProgress;
   const localProgress = range > 0
@@ -23,11 +31,19 @@ export function getFrameIndex(sequence: FrameSequence, progress: number) {
 export function getPrefetchFrameIndices(
   currentIndex: number,
   frameCount: number,
-  radius: number
+  radius: number,
+  direction: -1 | 1 = 1
 ) {
-  const start = Math.max(0, currentIndex - radius);
-  const end = Math.min(frameCount - 1, currentIndex + radius);
-  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  const indices = [currentIndex];
+  for (let distance = 1; distance <= radius; distance += 1) {
+    const ahead = currentIndex + distance * direction;
+    if (ahead >= 0 && ahead < frameCount) indices.push(ahead);
+  }
+  for (let distance = 1; distance <= radius; distance += 1) {
+    const behind = currentIndex - distance * direction;
+    if (behind >= 0 && behind < frameCount) indices.push(behind);
+  }
+  return indices;
 }
 
 export function getOpeningFrameUrls(sequences: readonly FrameSequence[]) {

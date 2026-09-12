@@ -1,9 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  FRAME_CACHE_LIMIT,
+  FRAME_PREFETCH_RADIUS,
+  MAX_BACKGROUND_FRAME_LOADS,
   getFrameIndex,
   getOpeningFrameUrls,
   getPrefetchFrameIndices,
+  getScrollDirection,
   type FrameSequence,
 } from "../src/lib/frameSequence.ts";
 import { HERO_SEQUENCES } from "../src/lib/heroAssets.ts";
@@ -22,8 +26,21 @@ const sequence: FrameSequence = {
 
 test("maps scroll progress and nearby requests to WebP frame URLs", () => {
   assert.equal(getFrameIndex(sequence, 0.3), 2);
-  assert.deepEqual(getPrefetchFrameIndices(4, 10, 2), [2, 3, 4, 5, 6]);
+  assert.deepEqual(getPrefetchFrameIndices(4, 10, 2, 1), [4, 5, 6, 3, 2]);
+  assert.deepEqual(getPrefetchFrameIndices(4, 10, 2, -1), [4, 3, 2, 5, 6]);
   assert.deepEqual(getOpeningFrameUrls([sequence]), ["/frames/a/0001.webp"]);
+});
+
+test("bounds decoded frame memory and background request pressure", () => {
+  assert.equal(FRAME_CACHE_LIMIT, 8);
+  assert.equal(FRAME_PREFETCH_RADIUS, 4);
+  assert.equal(MAX_BACKGROUND_FRAME_LOADS, 3);
+});
+
+test("keeps prefetch direction tied to page scroll across sequence boundaries", () => {
+  assert.equal(getScrollDirection(0.21, 0.19), 1);
+  assert.equal(getScrollDirection(0.19, 0.21), -1);
+  assert.equal(getScrollDirection(0.21, 0.21), 1);
 });
 
 test("publishes complete WebP hero sequences", () => {

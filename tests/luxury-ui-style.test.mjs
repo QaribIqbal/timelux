@@ -27,6 +27,11 @@ test("scrollytelling avoids decorative animated controls and uses frame sequence
   assert.doesNotMatch(source, /VideoCanvasScrubber/);
 });
 
+test("frame rendering drops stale decoded frames during rapid scrolling", async () => {
+  const source = await readFile(new URL("../src/components/scrolly/FrameSequenceScrubber.tsx", import.meta.url), "utf8");
+  assert.match(source, /image && !pendingTargetRef\.current/);
+});
+
 test("normal-scroll sections use the shared quiet panel treatment and palette", async () => {
   const collection = await readFile(new URL("../src/components/sections/CollectionSection.tsx", import.meta.url), "utf8");
   const craftsmanship = await readFile(new URL("../src/components/sections/CraftsmanshipSection.tsx", import.meta.url), "utf8");
@@ -46,8 +51,8 @@ test("ambient watch audio is configured as a looping track", async () => {
   const audio = await readFile(new URL("../src/components/ui/AmbientAudio.tsx", import.meta.url), "utf8");
   assert.match(page, /AmbientAudio/);
   assert.match(audio, /watch-background-audio-loop\.wav/);
+  assert.match(audio, /fetch\(AUDIO_SOURCE/);
   assert.match(audio, /loop/);
-  assert.match(audio, /preload="auto"/);
   assert.match(audio, /aria-label=\{isMuted/);
   assert.match(audio, /setIsMuted/);
 });
@@ -55,6 +60,9 @@ test("ambient watch audio is configured as a looping track", async () => {
 test("ambient audio asset starts without a loop-boundary silence", async () => {
   const audio = await readFile(new URL("../src/components/ui/AmbientAudio.tsx", import.meta.url), "utf8");
   assert.match(audio, /watch-background-audio-loop\.wav/);
+  assert.match(audio, /createBufferSource\(\)/);
+  assert.match(audio, /source\.loop = true/);
+  assert.doesNotMatch(audio, /<audio/);
 });
 
 test("collection and craftsmanship use static WebP posters without video controls", async () => {

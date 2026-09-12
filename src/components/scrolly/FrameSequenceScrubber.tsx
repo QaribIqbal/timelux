@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HERO_SEQUENCES } from "@/lib/heroAssets";
 import {
+  FRAME_CACHE_LIMIT,
+  FRAME_PREFETCH_RADIUS,
+  MAX_BACKGROUND_FRAME_LOADS,
   getFrameIndex,
   getPrefetchFrameIndices,
+  getScrollDirection,
   type FrameSequence,
 } from "@/lib/frameSequence";
-
-const CACHE_LIMIT = 42;
-const PREFETCH_RADIUS = 12;
 
 interface FrameSequenceScrubberProps {
   progress: number;
@@ -37,6 +38,9 @@ export default function FrameSequenceScrubber({
   const loadingRef = useRef(new Map<string, Promise<HTMLImageElement | null>>());
   const latestProgressRef = useRef(progress);
   const drawRafRef = useRef<number | null>(null);
+  const criticalRequestRef = useRef<Promise<void> | null>(null);
+  const pendingTargetRef = useRef<{ sequence: FrameSequence; frameIndex: number } | null>(null);
+  const previousProgressRef = useRef(progress);
   const openingFrameNotifiedRef = useRef(new Set<number>());
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const activeBeatIndex = getActiveBeatIndex(progress);
@@ -59,7 +63,7 @@ export default function FrameSequenceScrubber({
         const decode = typeof image.decode === "function" ? image.decode() : Promise.resolve();
         void decode.catch(() => undefined).then(() => {
           cacheRef.current.set(url, image);
-          while (cacheRef.current.size > CACHE_LIMIT) {
+          while (cacheRef.current.size > FRAME_CACHE_LIMIT) {
             const oldest = cacheRef.current.keys().next().value;
             if (!oldest) break;
             cacheRef.current.delete(oldest);
@@ -75,46 +79,77 @@ export default function FrameSequenceScrubber({
     return request;
   }, []);
 
-  const drawImage = useCallback((image: HTMLImageElement, sequence: FrameSequence) => {
+  const drawImage = useCallback((image: HTMLImageElement) => {
     const canvas = canvasRef.current;
     if (!canvas || !image.naturalWidth || !image.naturalHeight) return;
 
-    const bounds = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = Math.max(1, Math.round(bounds.width * dpr));
-    const height = Math.max(1, Math.round(bounds.height * dpr));
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
-      canvas.height = height;
-    }
-
     const context = canvas.getContext("2d");
     if (!context) return;
+    const width = canvas.width;
+    const height = canvas.height;
     const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
     const drawWidth = image.naturalWidth * scale;
     const drawHeight = image.naturalHeight * scale;
     context.clearRect(0, 0, width, height);
-    context.filter = sequence.filter ?? "none";
     context.drawImage(image, (width - drawWidth) / 2, (height - drawHeight) / 2, drawWidth, drawHeight);
-    context.filter = "none";
   }, []);
+
+  const requestCurrentFrame = useCallback((sequence: FrameSequence, frameIndex: number) => {
+    pendingTargetRef.current = { sequence, frameIndex };
+    if (criticalRequestRef.current) return;
+
+    const processLatestTarget = async () => {
+      while (pendingTargetRef.current) {
+        const target = pendingTargetRef.current;
+        pendingTargetRef.current = null;
+        const image = await loadFrame(target.sequence.framePath(target.frameIndex));
+        if (image && !pendingTargetRef.current) drawImage(image);
+      }
+    };
+
+    criticalRequestRef.current = processLatestTarget().finally(() => {
+      criticalRequestRef.current = null;
+    });
+  }, [drawImage, loadFrame]);
 
   const renderProgress = useCallback(() => {
     const index = getActiveBeatIndex(latestProgressRef.current);
     const sequence = HERO_SEQUENCES[index];
     const frameIndex = prefersReducedMotion ? 0 : getFrameIndex(sequence, latestProgressRef.current);
-    const frameUrl = sequence.framePath(frameIndex);
-
-    void loadFrame(frameUrl).then((image) => {
-      if (image) drawImage(image, sequence);
-    });
+    const direction = getScrollDirection(latestProgressRef.current, previousProgressRef.current);
+    previousProgressRef.current = latestProgressRef.current;
+    requestCurrentFrame(sequence, frameIndex);
 
     if (!prefersReducedMotion) {
-      for (const nearbyIndex of getPrefetchFrameIndices(frameIndex, sequence.frameCount, PREFETCH_RADIUS)) {
+      let backgroundRequests = 0;
+      const nearby = getPrefetchFrameIndices(
+        frameIndex,
+        sequence.frameCount,
+        FRAME_PREFETCH_RADIUS,
+        direction
+      );
+      for (const nearbyIndex of nearby.slice(1)) {
+        if (backgroundRequests >= MAX_BACKGROUND_FRAME_LOADS) break;
+        if (loadingRef.current.size >= MAX_BACKGROUND_FRAME_LOADS + 1) break;
         void loadFrame(sequence.framePath(nearbyIndex));
+        backgroundRequests += 1;
       }
     }
-  }, [drawImage, loadFrame, prefersReducedMotion]);
+  }, [loadFrame, prefersReducedMotion, requestCurrentFrame]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -163,7 +198,12 @@ export default function FrameSequenceScrubber({
         className="absolute inset-0 h-full w-full object-cover"
         style={{ filter: activeSequence.filter }}
       />
-      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full"
+        style={{ filter: activeSequence.filter }}
+      />
     </div>
   );
 }
