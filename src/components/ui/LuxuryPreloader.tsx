@@ -9,57 +9,93 @@ interface LuxuryPreloaderProps {
 export default function LuxuryPreloader({
   isHeroReady = false,
 }: LuxuryPreloaderProps) {
+  const CRITICAL_IMAGES = [
+    "/videos/posters/01-hero-4k-rotation.webp",
+    "/videos/posters/02-case-geometry-rotation.webp",
+    "/videos/posters/03-exploded-deconstruction.webp",
+    "/videos/posters/04-movement-gears-4k.webp",
+    "/videos/posters/05-timepiece-reassembly.webp",
+    "/watches/model-1-monolith.webp",
+    "/watches/model-2-steel-blue.webp",
+    "/watches/model-3-gold-atelier.webp",
+    "/videos/posters/06-three-watch-collection.webp",
+    "/videos/posters/07-macro-craftsmanship.webp",
+  ];
+
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);
-  const [posterLoaded, setPosterLoaded] = useState(false);
+  const [loadedCount, setLoadedCount] = useState(0);
   const [safetyTimedOut, setSafetyTimedOut] = useState(false);
 
-  // Preload critical 4K Lossless WebP hero poster and showcase models
+  // Preload and decode all 4K Lossless WebP hero posters and showcase models
   useEffect(() => {
-    const heroPoster = new Image();
-    heroPoster.src = "/videos/posters/01-hero-4k-rotation.webp";
-    heroPoster.onload = () => setPosterLoaded(true);
-    heroPoster.onerror = () => setPosterLoaded(true);
+    let isCancelled = false;
 
-    const w1 = new Image();
-    w1.src = "/watches/model-1-monolith.webp";
-    const w2 = new Image();
-    w2.src = "/watches/model-2-steel-blue.webp";
-    const w3 = new Image();
-    w3.src = "/watches/model-3-gold-atelier.webp";
+    CRITICAL_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
 
-    // Safety timeout: Never keep the atelier permanently locked if offline or media blocked
+      const handleImageReady = () => {
+        if (!isCancelled) {
+          setLoadedCount((prev) => prev + 1);
+        }
+      };
+
+      if (typeof img.decode === "function") {
+        img
+          .decode()
+          .then(handleImageReady)
+          .catch(() => {
+            img.onload = handleImageReady;
+            img.onerror = handleImageReady;
+          });
+      } else {
+        img.onload = handleImageReady;
+        img.onerror = handleImageReady;
+      }
+    });
+
+    // 35-second safety fallback: Never keep the atelier permanently locked if offline or media blocked
     const fallbackTimer = setTimeout(() => {
-      setSafetyTimedOut(true);
-    }, 4500);
+      if (!isCancelled) {
+        setSafetyTimedOut(true);
+      }
+    }, 35000);
 
-    return () => clearTimeout(fallbackTimer);
+    return () => {
+      isCancelled = true;
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
-  const isActuallyReady = (isHeroReady && posterLoaded) || safetyTimedOut;
+  const allImagesReady = loadedCount >= CRITICAL_IMAGES.length;
+  const isFullyCalibrated = (allImagesReady && isHeroReady) || safetyTimedOut;
+
+  // Real proportional progress calculation
+  const targetProgress = isFullyCalibrated
+    ? 100
+    : Math.min(92, Math.floor((loadedCount / CRITICAL_IMAGES.length) * 92));
 
   useEffect(() => {
     const interval = setInterval(() => {
       setLoadingProgress((prev) => {
-        // If hero media is still loading over the network, smoothly hold at 88%
-        if (!isActuallyReady && prev >= 88) {
-          return 88;
+        if (prev >= targetProgress) {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev;
         }
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        // Accelerate when actually ready, otherwise advance steadily
-        const step = isActuallyReady
-          ? Math.floor(Math.random() * 8) + 6
-          : Math.floor(Math.random() * 5) + 3;
-        return Math.min(100, prev + step);
+        // Smooth horological calibration increment
+        const delta = targetProgress - prev;
+        const step = Math.max(1, Math.min(delta, Math.floor(Math.random() * 4) + 2));
+        return Math.min(targetProgress, prev + step);
       });
-    }, 40);
+    }, 35);
 
     return () => clearInterval(interval);
-  }, [isActuallyReady]);
+  }, [targetProgress]);
 
   useEffect(() => {
     if (loadingProgress >= 100) {
