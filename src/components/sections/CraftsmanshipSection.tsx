@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
+import Image from "next/image";
 import { ArrowRight, Sparkles, Check, Gem, Award, ShieldCheck, Compass } from "lucide-react";
 
 interface CraftsmanshipSectionProps {
@@ -8,44 +9,21 @@ interface CraftsmanshipSectionProps {
 }
 
 export default function CraftsmanshipSection({ onOpenCommission }: CraftsmanshipSectionProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShouldLoadVideo(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "500px 0px" }
-    );
-
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <section
-      ref={sectionRef}
       id="craftsmanship"
       className="relative py-36 px-6 lg:px-12 bg-[var(--midnight-black)] z-20 border-t border-[var(--titanium-silver)]/15 overflow-hidden"
     >
-      {/* Macro Craftsmanship Video Background: Crisp and contrast-enhanced without fog */}
+      {/* Static macro poster preserves the visual atmosphere without autoplay. */}
       <div className="absolute inset-0 opacity-25 pointer-events-none flex items-center justify-center">
-        <video
-          src={shouldLoadVideo ? "/videos/07-macro-craftsmanship.9792d978.mp4" : undefined}
-          poster={shouldLoadVideo ? "/videos/posters/07-macro-craftsmanship.2d194427.webp" : undefined}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="none"
-          className="w-full h-full object-cover pointer-events-none"
+        <Image
+          src="/videos/posters/07-macro-craftsmanship.2d194427.webp"
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes="100vw"
+          quality={100}
+          className="object-cover"
           style={{
             filter: "contrast(1.15) brightness(1.02)",
             backgroundColor: "var(--midnight-black)",

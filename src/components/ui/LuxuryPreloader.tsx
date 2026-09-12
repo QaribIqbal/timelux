@@ -1,58 +1,28 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { HERO_BEATS } from "@/lib/heroAssets";
+import { HERO_SEQUENCES } from "@/lib/heroAssets";
 import { isHeroReadyForEntry } from "@/lib/heroLoading";
 
 interface LuxuryPreloaderProps {
-  settledHeroVideos?: number;
+  settledOpeningFrames?: number;
 }
 
-export default function LuxuryPreloader({ settledHeroVideos = 0 }: LuxuryPreloaderProps) {
+export default function LuxuryPreloader({ settledOpeningFrames = 0 }: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);
-  const [readyHeroPosters, setReadyHeroPosters] = useState(0);
-
-  useEffect(() => {
-    let isCancelled = false;
-    const loadedPosters = new Set<string>();
-    const markReady = (poster: string) => {
-      if (isCancelled || loadedPosters.has(poster)) return;
-      loadedPosters.add(poster);
-      setReadyHeroPosters(loadedPosters.size);
-    };
-
-    HERO_BEATS.forEach(([, , poster]) => {
-      const image = new Image();
-      image.onload = () => {
-        if (typeof image.decode === "function") {
-          void image.decode().then(() => markReady(poster), () => markReady(poster));
-        } else {
-          markReady(poster);
-        }
-      };
-      image.onerror = () => markReady(poster);
-      image.src = poster;
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
-
   const isFullyCalibrated = isHeroReadyForEntry(
-    readyHeroPosters,
-    settledHeroVideos,
-    HERO_BEATS.length
+    settledOpeningFrames,
+    HERO_SEQUENCES.length
   );
   const targetProgress = isFullyCalibrated
     ? 100
     : Math.min(
         99,
         Math.round(
-          ((readyHeroPosters + Math.min(settledHeroVideos, HERO_BEATS.length)) /
-            (HERO_BEATS.length * 2)) *
+          (Math.min(settledOpeningFrames, HERO_SEQUENCES.length) /
+            HERO_SEQUENCES.length) *
             100
         )
       );

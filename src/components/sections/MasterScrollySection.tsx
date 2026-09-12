@@ -1,19 +1,20 @@
 "use client";
 
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import VideoCanvasScrubber from "@/components/scrolly/VideoCanvasScrubber";
+import FrameSequenceScrubber from "@/components/scrolly/FrameSequenceScrubber";
+import { HERO_BEAT_LABELS } from "@/lib/heroAssets";
 import { ArrowRight, Play } from "lucide-react";
 
 interface MasterScrollySectionProps {
   onOpenMechanism: () => void;
   onOpenCommission: () => void;
-  onHeroMediaSettled?: (beatIndex: number) => void;
+  onOpeningFrameSettled?: (beatIndex: number) => void;
 }
 
 export default function MasterScrollySection({
   onOpenMechanism,
   onOpenCommission,
-  onHeroMediaSettled,
+  onOpeningFrameSettled,
 }: MasterScrollySectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -87,12 +88,12 @@ export default function MasterScrollySection({
         className="sticky top-0 left-0 w-full overflow-hidden"
         style={{ height: "100vh" }}
       >
-        {/* Full-bleed 60fps video scrubber using native 4K/2K intra-frame sequences */}
+        {/* Full-bleed scroll-linked WebP frame sequences. */}
         <div className="absolute inset-0 z-0">
-          <VideoCanvasScrubber
+          <FrameSequenceScrubber
             progress={scrollProgress}
             onActiveBeatChange={setActiveBeat}
-            onHeroMediaSettled={onHeroMediaSettled}
+            onOpeningFrameSettled={onOpeningFrameSettled}
           />
         </div>
 
@@ -101,7 +102,7 @@ export default function MasterScrollySection({
           className="absolute inset-0 pointer-events-none z-10"
           style={{
             background:
-              "linear-gradient(to top, var(--midnight-black) 0%, rgba(13,13,13,0.7) 6%, transparent 14%)",
+              "linear-gradient(to top, rgba(13,13,13,0.94) 0%, rgba(13,13,13,0.68) 19%, transparent 44%), linear-gradient(to right, rgba(13,13,13,0.66) 0%, transparent 52%)",
           }}
         />
 
@@ -155,7 +156,7 @@ export default function MasterScrollySection({
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none"
           style={beatStyle(isGeometry)}
         >
-          <div className="max-w-md drop-shadow-[0_2px_15px_rgba(0,0,0,0.95)]">
+          <div className="max-w-md rounded-xl border border-white/10 bg-[rgba(13,13,13,0.68)] px-5 py-4 shadow-[0_10px_35px_rgba(0,0,0,0.62)] backdrop-blur-sm">
             <div
               className="text-[10px] font-mono tracking-[0.3em] uppercase mb-2 text-[var(--champagne-gold)]"
             >
@@ -198,7 +199,7 @@ export default function MasterScrollySection({
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none flex justify-end"
           style={beatStyle(isExploded)}
         >
-          <div className="max-w-md text-right drop-shadow-[0_2px_15px_rgba(0,0,0,0.95)]">
+          <div className="max-w-md rounded-xl border border-white/10 bg-[rgba(13,13,13,0.68)] px-5 py-4 text-right shadow-[0_10px_35px_rgba(0,0,0,0.62)] backdrop-blur-sm">
             <div
               className="text-[10px] font-mono tracking-[0.3em] uppercase mb-2 text-[var(--champagne-gold)]"
             >
@@ -241,7 +242,7 @@ export default function MasterScrollySection({
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none"
           style={beatStyle(isMovement)}
         >
-          <div className="max-w-md drop-shadow-[0_2px_15px_rgba(0,0,0,0.95)]">
+          <div className="max-w-md rounded-xl border border-white/10 bg-[rgba(13,13,13,0.76)] px-5 py-4 shadow-[0_10px_35px_rgba(0,0,0,0.68)] backdrop-blur-sm">
             <div
               className="text-[10px] font-mono tracking-[0.3em] uppercase mb-2 text-[var(--champagne-gold)]"
             >
@@ -284,7 +285,7 @@ export default function MasterScrollySection({
           className="absolute bottom-0 left-0 right-0 z-20 px-6 sm:px-16 pb-10 select-none"
           style={beatStyle(isReassembly)}
         >
-          <div className="flex flex-col items-center text-center gap-5 drop-shadow-[0_2px_20px_rgba(0,0,0,0.95)]">
+          <div className="mx-auto flex max-w-md flex-col items-center gap-5 rounded-xl border border-white/10 bg-[rgba(13,13,13,0.68)] px-6 py-5 text-center shadow-[0_10px_35px_rgba(0,0,0,0.62)] backdrop-blur-sm">
             <div
               className="text-[10px] font-mono tracking-[0.3em] uppercase text-[var(--champagne-gold)]"
             >
@@ -330,13 +331,7 @@ export default function MasterScrollySection({
             color: "var(--titanium-silver)",
           }}
         >
-          {[
-            [0, "01 Hero 4K"],
-            [1, "02 Geometry"],
-            [2, "03 Deconstruct"],
-            [3, "04 Movement 4K"],
-            [4, "05 Reassembly"],
-          ].map(([i, label]) => (
+          {HERO_BEAT_LABELS.map((label, i) => (
             <span
               key={label}
               className={activeBeat === i ? "text-[var(--champagne-gold)] font-bold" : ""}

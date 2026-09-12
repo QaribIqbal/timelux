@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useState } from "react";
-import { HERO_BEATS } from "@/lib/heroAssets";
+import { HERO_SEQUENCES } from "@/lib/heroAssets";
 import LuxuryPreloader from "@/components/ui/LuxuryPreloader";
 import Navbar from "@/components/ui/Navbar";
 import MasterScrollySection from "@/components/sections/MasterScrollySection";
@@ -18,16 +18,16 @@ export default function Home() {
   const [preselectedModel, setPreselectedModel] = useState<string | undefined>(
     undefined
   );
-  const [settledHeroVideos, setSettledHeroVideos] = useState(0);
+  const [settledOpeningFrames, setSettledOpeningFrames] = useState(0);
 
   const handleSelectModel = (modelName: string) => {
     setPreselectedModel(modelName);
     setIsCommissionOpen(true);
   };
 
-  const handleHeroMediaSettled = useCallback(() => {
-    setSettledHeroVideos((previous) =>
-      Math.min(HERO_BEATS.length, previous + 1)
+  const handleOpeningFrameSettled = useCallback(() => {
+    setSettledOpeningFrames((previous) =>
+      Math.min(HERO_SEQUENCES.length, previous + 1)
     );
   }, []);
 
@@ -35,8 +35,8 @@ export default function Home() {
     <main className="relative min-h-screen bg-[var(--midnight-black)] text-[var(--headline-white)]">
       <AmbientAudio />
 
-      {/* Luxury Horology Preloader linked directly to real hero media readiness */}
-      <LuxuryPreloader settledHeroVideos={settledHeroVideos} />
+      {/* Luxury Horology Preloader releases only after every opening hero frame settles. */}
+      <LuxuryPreloader settledOpeningFrames={settledOpeningFrames} />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
       <Navbar
@@ -44,11 +44,11 @@ export default function Home() {
         onOpenMechanism={() => setIsMechanismOpen(true)}
       />
 
-      {/* CORE INTERACTION: SCROLL-LINKED HERO VIDEO SEQUENCE */}
+      {/* CORE INTERACTION: SCROLL-LINKED HERO FRAME SEQUENCE */}
       <MasterScrollySection
         onOpenMechanism={() => setIsMechanismOpen(true)}
         onOpenCommission={() => setIsCommissionOpen(true)}
-        onHeroMediaSettled={handleHeroMediaSettled}
+        onOpeningFrameSettled={handleOpeningFrameSettled}
       />
 
       {/* SECTION 5: THE COLLECTION — CHOOSE YOUR EXPRESSION (Normal Scroll) */}
