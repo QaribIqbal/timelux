@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { HERO_BEATS } from "@/lib/heroAssets";
 import LuxuryPreloader from "@/components/ui/LuxuryPreloader";
 import Navbar from "@/components/ui/Navbar";
@@ -18,19 +18,25 @@ export default function Home() {
   const [preselectedModel, setPreselectedModel] = useState<string | undefined>(
     undefined
   );
-  const [readyHeroVideos, setReadyHeroVideos] = useState(0);
+  const [settledHeroVideos, setSettledHeroVideos] = useState(0);
 
   const handleSelectModel = (modelName: string) => {
     setPreselectedModel(modelName);
     setIsCommissionOpen(true);
   };
 
+  const handleHeroMediaSettled = useCallback(() => {
+    setSettledHeroVideos((previous) =>
+      Math.min(HERO_BEATS.length, previous + 1)
+    );
+  }, []);
+
   return (
     <main className="relative min-h-screen bg-[var(--midnight-black)] text-[var(--headline-white)]">
       <AmbientAudio />
 
       {/* Luxury Horology Preloader linked directly to real hero media readiness */}
-      <LuxuryPreloader readyHeroVideos={readyHeroVideos} />
+      <LuxuryPreloader settledHeroVideos={settledHeroVideos} />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
       <Navbar
@@ -42,9 +48,7 @@ export default function Home() {
       <MasterScrollySection
         onOpenMechanism={() => setIsMechanismOpen(true)}
         onOpenCommission={() => setIsCommissionOpen(true)}
-        onHeroMediaReady={() =>
-          setReadyHeroVideos((previous) => Math.min(HERO_BEATS.length, previous + 1))
-        }
+        onHeroMediaSettled={handleHeroMediaSettled}
       />
 
       {/* SECTION 5: THE COLLECTION — CHOOSE YOUR EXPRESSION (Normal Scroll) */}

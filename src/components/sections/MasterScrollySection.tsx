@@ -7,13 +7,13 @@ import { ArrowRight, Play } from "lucide-react";
 interface MasterScrollySectionProps {
   onOpenMechanism: () => void;
   onOpenCommission: () => void;
-  onHeroMediaReady?: (beatIndex: number) => void;
+  onHeroMediaSettled?: (beatIndex: number) => void;
 }
 
 export default function MasterScrollySection({
   onOpenMechanism,
   onOpenCommission,
-  onHeroMediaReady,
+  onHeroMediaSettled,
 }: MasterScrollySectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -92,7 +92,7 @@ export default function MasterScrollySection({
           <VideoCanvasScrubber
             progress={scrollProgress}
             onActiveBeatChange={setActiveBeat}
-            onHeroMediaReady={onHeroMediaReady}
+            onHeroMediaSettled={onHeroMediaSettled}
           />
         </div>
 

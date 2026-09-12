@@ -5,10 +5,10 @@ import { HERO_BEATS } from "@/lib/heroAssets";
 import { isHeroReadyForEntry } from "@/lib/heroLoading";
 
 interface LuxuryPreloaderProps {
-  readyHeroVideos?: number;
+  settledHeroVideos?: number;
 }
 
-export default function LuxuryPreloader({ readyHeroVideos = 0 }: LuxuryPreloaderProps) {
+export default function LuxuryPreloader({ settledHeroVideos = 0 }: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);
@@ -43,7 +43,7 @@ export default function LuxuryPreloader({ readyHeroVideos = 0 }: LuxuryPreloader
 
   const isFullyCalibrated = isHeroReadyForEntry(
     readyHeroPosters,
-    readyHeroVideos,
+    settledHeroVideos,
     HERO_BEATS.length
   );
   const targetProgress = isFullyCalibrated
@@ -51,7 +51,7 @@ export default function LuxuryPreloader({ readyHeroVideos = 0 }: LuxuryPreloader
     : Math.min(
         99,
         Math.round(
-          ((readyHeroPosters + Math.min(readyHeroVideos, HERO_BEATS.length)) /
+          ((readyHeroPosters + Math.min(settledHeroVideos, HERO_BEATS.length)) /
             (HERO_BEATS.length * 2)) *
             100
         )
