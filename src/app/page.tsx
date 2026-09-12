@@ -18,6 +18,7 @@ export default function Home() {
     undefined
   );
   const [isHeroReady, setIsHeroReady] = useState(false);
+  const [readyHeroVideos, setReadyHeroVideos] = useState(0);
 
   const handleSelectModel = (modelName: string) => {
     setPreselectedModel(modelName);
@@ -29,7 +30,10 @@ export default function Home() {
       <AmbientAudio />
 
       {/* Luxury Horology Preloader linked directly to real hero media readiness */}
-      <LuxuryPreloader isHeroReady={isHeroReady} />
+      <LuxuryPreloader
+        isHeroReady={isHeroReady}
+        readyHeroVideos={readyHeroVideos}
+      />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
       <Navbar
@@ -47,6 +51,7 @@ export default function Home() {
         onOpenMechanism={() => setIsMechanismOpen(true)}
         onOpenCommission={() => setIsCommissionOpen(true)}
         onHeroReady={() => setIsHeroReady(true)}
+        onHeroMediaReady={() => setReadyHeroVideos((count) => count + 1)}
       />
 
       {/* SECTION 5: THE COLLECTION — CHOOSE YOUR EXPRESSION (Normal Scroll) */}

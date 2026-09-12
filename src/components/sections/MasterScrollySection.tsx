@@ -8,12 +8,14 @@ interface MasterScrollySectionProps {
   onOpenMechanism: () => void;
   onOpenCommission: () => void;
   onHeroReady?: () => void;
+  onHeroMediaReady?: (beatIndex: number) => void;
 }
 
 export default function MasterScrollySection({
   onOpenMechanism,
   onOpenCommission,
   onHeroReady,
+  onHeroMediaReady,
 }: MasterScrollySectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -93,6 +95,7 @@ export default function MasterScrollySection({
             progress={scrollProgress}
             onActiveBeatChange={setActiveBeat}
             onHeroReady={onHeroReady}
+            onHeroMediaReady={onHeroMediaReady}
           />
         </div>
 

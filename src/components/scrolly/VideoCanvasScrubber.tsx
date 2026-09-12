@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { HERO_BEATS } from "@/lib/heroAssets";
 
 export interface VideoBeatConfig {
   id: string;
@@ -18,71 +19,32 @@ interface VideoCanvasScrubberProps {
   className?: string;
   onActiveBeatChange?: (beatIndex: number) => void;
   onHeroReady?: () => void;
+  onHeroMediaReady?: (beatIndex: number) => void;
 }
 
-export const PINNED_BEATS: VideoBeatConfig[] = [
-  {
-    id: "hero",
-    src: "/videos/01-hero-4k-rotation.mp4",
-    poster: "/videos/posters/01-hero-4k-rotation.webp",
-    fps: 30,
-    duration: 7.97,
-    startProgress: 0.0,
-    endProgress: 0.20,
-    filter: "contrast(1.06) brightness(1.02)",
-  },
-  {
-    id: "geometry",
-    src: "/videos/02-case-geometry-rotation.mp4",
-    poster: "/videos/posters/02-case-geometry-rotation.webp",
-    fps: 30,
-    duration: 7.97,
-    startProgress: 0.20,
-    endProgress: 0.40,
-    filter: "contrast(1.10) brightness(1.04) saturate(1.15)",
-  },
-  {
-    id: "exploded",
-    src: "/videos/03-exploded-deconstruction.mp4",
-    poster: "/videos/posters/03-exploded-deconstruction.webp",
-    fps: 30,
-    duration: 9.97,
-    startProgress: 0.40,
-    endProgress: 0.65,
-    filter: "contrast(1.08) brightness(1.04) saturate(1.12)",
-  },
-  {
-    id: "movement",
-    src: "/videos/04-movement-gears-4k.mp4",
-    poster: "/videos/posters/04-movement-gears-4k.webp",
-    fps: 30,
-    duration: 9.97,
-    startProgress: 0.65,
-    endProgress: 0.85,
-    filter: "contrast(1.06) brightness(1.02)",
-  },
-  {
-    id: "reassembly",
-    src: "/videos/05-timepiece-reassembly.mp4",
-    poster: "/videos/posters/05-timepiece-reassembly.webp",
-    fps: 30,
-    duration: 9.97,
-    startProgress: 0.85,
-    endProgress: 1.0,
-    filter: "contrast(1.08) brightness(1.04) saturate(1.12)",
-  },
-];
+export const PINNED_BEATS: VideoBeatConfig[] = HERO_BEATS.map(([id, src, poster, fps, duration, startProgress, endProgress, filter]) => ({
+  id,
+  src,
+  poster,
+  fps,
+  duration,
+  startProgress,
+  endProgress,
+  filter,
+}));
 
 export default function VideoCanvasScrubber({
   progress,
   className = "",
   onActiveBeatChange,
   onHeroReady,
+  onHeroMediaReady,
 }: VideoCanvasScrubberProps) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [readyStates, setReadyStates] = useState<boolean[]>(
     new Array(PINNED_BEATS.length).fill(false)
   );
+  const notifiedReadyRef = useRef<boolean[]>(new Array(PINNED_BEATS.length).fill(false));
 
   const isSeekingRefs = useRef<boolean[]>(new Array(PINNED_BEATS.length).fill(false));
   const pendingTargetsRef = useRef<(number | null)[]>(new Array(PINNED_BEATS.length).fill(null));
@@ -115,10 +77,12 @@ export default function VideoCanvasScrubber({
       updated[index] = true;
       return updated;
     });
-    if (index === 0) {
-      onHeroReady?.();
+    if (!notifiedReadyRef.current[index]) {
+      notifiedReadyRef.current[index] = true;
+      onHeroMediaReady?.(index);
+      if (index === 0) onHeroReady?.();
     }
-  }, [onHeroReady]);
+  }, [onHeroMediaReady, onHeroReady]);
 
   // Actively poll hero video on mount to signal readiness as soon as data arrives
   useEffect(() => {

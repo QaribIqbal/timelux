@@ -231,7 +231,7 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
                       src={watch.image}
                       alt={watch.name}
                       fill
-                      quality={100}
+                      quality={85}
                       sizes="(max-width: 768px) calc(100vw - 3rem), (max-width: 1280px) 30vw, 384px"
                       className="object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-105"
                       style={{
