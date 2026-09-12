@@ -19,11 +19,12 @@ test("navigation uses a single primary call to action and no animated wordmark o
   assert.match(source, /btn-gold-luxury/);
 });
 
-test("scrollytelling avoids decorative animated controls and uses VideoCanvasScrubber", async () => {
+test("scrollytelling avoids decorative animated controls and uses frame sequences", async () => {
   const source = await readFile(new URL("../src/components/sections/MasterScrollySection.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(source, /animate-spin|animate-ping|animate-bounce/);
   assert.match(source, /panel-luxury/);
-  assert.match(source, /VideoCanvasScrubber/);
+  assert.match(source, /FrameSequenceScrubber/);
+  assert.doesNotMatch(source, /VideoCanvasScrubber/);
 });
 
 test("normal-scroll sections use the shared quiet panel treatment and palette", async () => {
@@ -56,16 +57,11 @@ test("ambient audio asset starts without a loop-boundary silence", async () => {
   assert.match(audio, /watch-background-audio-loop\.wav/);
 });
 
-test("collection showcase preloads and plays when it enters the viewport", async () => {
+test("collection and craftsmanship use static WebP posters without video controls", async () => {
   const collection = await readFile(new URL("../src/components/sections/CollectionSection.tsx", import.meta.url), "utf8");
-  assert.match(collection, /IntersectionObserver/);
-  assert.match(collection, /preload="auto"/);
-  assert.match(collection, /autoPlay/);
-  assert.match(collection, /onCanPlay=\{\(\) =>/);
-  assert.match(collection, /video\.play\(\)/);
-});
-
-test("collection showcase keeps the video play target clickable", async () => {
-  const collection = await readFile(new URL("../src/components/sections/CollectionSection.tsx", import.meta.url), "utf8");
-  assert.doesNotMatch(collection, /className="w-full h-full object-contain pointer-events-none"/);
+  const craftsmanship = await readFile(new URL("../src/components/sections/CraftsmanshipSection.tsx", import.meta.url), "utf8");
+  assert.match(collection, /06-three-watch-collection\.c0ee4e9f\.webp/);
+  assert.match(craftsmanship, /07-macro-craftsmanship\.2d194427\.webp/);
+  assert.doesNotMatch(collection, /<video|autoPlay|video\.play|IntersectionObserver/);
+  assert.doesNotMatch(craftsmanship, /<video|autoPlay|video\.play|IntersectionObserver/);
 });

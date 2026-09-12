@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { ArrowRight, Compass, Shield, Clock } from "lucide-react";
 
@@ -55,39 +55,6 @@ function TiltCard({ children, className = "" }: TiltCardProps) {
 
 export default function CollectionSection({ onSelectModel }: CollectionSectionProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const collectionVideoRef = useRef<HTMLVideoElement>(null);
-  const collectionVideoInViewRef = useRef(false);
-  const collectionVideoLoadedRef = useRef(false);
-
-  useEffect(() => {
-    const video = collectionVideoRef.current;
-    if (!video) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        collectionVideoInViewRef.current = entry.isIntersecting;
-        if (entry.isIntersecting) {
-          if (!collectionVideoLoadedRef.current) {
-            collectionVideoLoadedRef.current = true;
-            video.preload = "auto";
-            video.load();
-          }
-          void video.play().catch(() => {
-            // Browser autoplay policy may require a user gesture.
-          });
-        } else {
-          video.pause();
-        }
-      },
-      { rootMargin: "300px 0px", threshold: 0.15 }
-    );
-
-    observer.observe(video);
-    return () => {
-      observer.disconnect();
-      video.pause();
-    };
-  }, []);
 
   const watches = [
     {
@@ -168,26 +135,16 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
           </p>
         </div>
 
-        {/* 3-Watch Collection Video Showcase: Crystal clear without fog */}
+        {/* Static, high-quality collection poster: no autoplay or playback affordance. */}
         <div className="relative w-full max-w-4xl mx-auto h-[320px] sm:h-[440px] rounded-2xl overflow-hidden mb-16 border border-[var(--champagne-gold)]/30 bg-[var(--midnight-black)]">
-          <video
-            ref={collectionVideoRef}
-            src="/videos/06-three-watch-collection.76bdaf35.mp4"
-            poster="/videos/posters/06-three-watch-collection.c0ee4e9f.webp"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="none"
-            onCanPlay={() => {
-              if (collectionVideoInViewRef.current) {
-                void collectionVideoRef.current?.play().catch(() => undefined);
-              }
-            }}
-            onClick={() => {
-              void collectionVideoRef.current?.play().catch(() => undefined);
-            }}
-            className="w-full h-full object-contain cursor-pointer"
+          <Image
+            src="/videos/posters/06-three-watch-collection.c0ee4e9f.webp"
+            alt="Three TIMELUX limited-edition watches"
+            fill
+            priority={false}
+            sizes="(max-width: 768px) calc(100vw - 3rem), 896px"
+            quality={100}
+            className="object-contain"
             style={{
               backgroundColor: "var(--midnight-black)",
               filter: "contrast(1.08) brightness(1.02)",
