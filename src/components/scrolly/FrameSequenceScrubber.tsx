@@ -103,7 +103,7 @@ export default function FrameSequenceScrubber({
         const target = pendingTargetRef.current;
         pendingTargetRef.current = null;
         const image = await loadFrame(target.sequence.framePath(target.frameIndex));
-        if (image && !pendingTargetRef.current) drawImage(image);
+        if (image) drawImage(image);
       }
     };
 
@@ -183,7 +183,10 @@ export default function FrameSequenceScrubber({
   }, [activeBeatIndex, onActiveBeatChange]);
 
   useEffect(() => () => {
-    if (drawRafRef.current !== null) cancelAnimationFrame(drawRafRef.current);
+    if (drawRafRef.current !== null) {
+      cancelAnimationFrame(drawRafRef.current);
+      drawRafRef.current = null;
+    }
   }, []);
 
   const activeSequence = HERO_SEQUENCES[activeBeatIndex];

@@ -27,9 +27,18 @@ test("scrollytelling avoids decorative animated controls and uses frame sequence
   assert.doesNotMatch(source, /VideoCanvasScrubber/);
 });
 
-test("frame rendering drops stale decoded frames during rapid scrolling", async () => {
+test("frame rendering paints decoded frames while the next scroll target is pending", async () => {
   const source = await readFile(new URL("../src/components/scrolly/FrameSequenceScrubber.tsx", import.meta.url), "utf8");
-  assert.match(source, /image && !pendingTargetRef\.current/);
+  assert.match(source, /if \(image\) drawImage\(image\)/);
+  assert.doesNotMatch(source, /image && !pendingTargetRef\.current/);
+});
+
+test("frame rendering releases the animation-frame gate after cleanup", async () => {
+  const source = await readFile(new URL("../src/components/scrolly/FrameSequenceScrubber.tsx", import.meta.url), "utf8");
+  assert.match(
+    source,
+    /cancelAnimationFrame\(drawRafRef\.current\);\s*drawRafRef\.current = null;/
+  );
 });
 
 test("normal-scroll sections use the shared quiet panel treatment and palette", async () => {
