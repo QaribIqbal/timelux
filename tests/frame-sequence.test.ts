@@ -8,6 +8,7 @@ import {
   getOpeningFrameUrls,
   getEntrySequenceFrameUrls,
   getBackgroundSequenceFrameUrls,
+  getBackgroundSequenceFrameGroups,
   getPrefetchFrameIndices,
   getScrollDirection,
   type FrameSequence,
@@ -65,6 +66,27 @@ test("queues every non-hero sequence for background transfer", () => {
   ]), [
     "/frames/c/0001.webp",
   ]);
+});
+
+test("starts later sections in parallel background groups", () => {
+  const sequenceB = {
+    ...sequence,
+    id: "b",
+    frameCount: 1,
+    framePath: () => "/frames/b/0001.webp",
+  };
+  const sequenceC = {
+    ...sequence,
+    id: "c",
+    frameCount: 1,
+    framePath: () => "/frames/c/0001.webp",
+  };
+  assert.deepEqual(getBackgroundSequenceFrameGroups([
+    { ...sequence, frameCount: 1 },
+    { ...sequence, id: "entry-two", frameCount: 1, framePath: () => "/frames/entry-two/0001.webp" },
+    sequenceB,
+    sequenceC,
+  ]), [["/frames/b/0001.webp"], ["/frames/c/0001.webp"]]);
 });
 
 test("bounds decoded frame memory and background request pressure", () => {

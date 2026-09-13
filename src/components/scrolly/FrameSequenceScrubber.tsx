@@ -8,7 +8,7 @@ import {
   BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY,
   HERO_ENTRY_PRELOAD_CONCURRENCY,
   MAX_BACKGROUND_FRAME_LOADS,
-  getBackgroundSequenceFrameUrls,
+  getBackgroundSequenceFrameGroups,
   getEntrySequenceFrameUrls,
   getHeroEntryFrameUrls,
   getFrameIndex,
@@ -198,26 +198,31 @@ export default function FrameSequenceScrubber({
       // Transfer the later sections without decoding them into the small in-memory
       // frame cache. Their immutable URLs are then available from HTTP cache when
       // their scroll sequence becomes active.
-      const backgroundUrls = getBackgroundSequenceFrameUrls(HERO_SEQUENCES);
-      let nextBackgroundFrame = 0;
-      const backgroundWorker = async () => {
-        while (!cancelled) {
-          const frameIndex = nextBackgroundFrame;
-          nextBackgroundFrame += 1;
-          if (frameIndex >= backgroundUrls.length) return;
-          try {
-            await fetch(backgroundUrls[frameIndex], { cache: "force-cache" });
-          } catch {
-            // A later scroll request retries a frame that could not be transferred.
-          }
-        }
-      };
-      void Promise.all(
-        Array.from(
-          { length: BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY },
-          backgroundWorker
-        )
+      const backgroundGroups = getBackgroundSequenceFrameGroups(HERO_SEQUENCES);
+      if (backgroundGroups.length === 0) return;
+      const workersPerSequence = Math.max(
+        1,
+        Math.floor(BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY / backgroundGroups.length)
       );
+      const preloadBackgroundGroup = async (urls: readonly string[]) => {
+        let nextBackgroundFrame = 0;
+        const backgroundWorker = async () => {
+          while (!cancelled) {
+            const frameIndex = nextBackgroundFrame;
+            nextBackgroundFrame += 1;
+            if (frameIndex >= urls.length) return;
+            try {
+              await fetch(urls[frameIndex], { cache: "force-cache" });
+            } catch {
+              // A later scroll request retries a frame that could not be transferred.
+            }
+          }
+        };
+        await Promise.all(
+          Array.from({ length: workersPerSequence }, backgroundWorker)
+        );
+      };
+      void Promise.all(backgroundGroups.map(preloadBackgroundGroup));
     };
 
     void preloadHero();

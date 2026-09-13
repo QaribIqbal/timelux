@@ -67,3 +67,7 @@ export function getEntrySequenceFrameUrls(sequences: readonly FrameSequence[]) {
 export function getBackgroundSequenceFrameUrls(sequences: readonly FrameSequence[]) {
   return sequences.slice(ENTRY_SEQUENCE_COUNT).flatMap(getHeroEntryFrameUrls);
 }
+
+export function getBackgroundSequenceFrameGroups(sequences: readonly FrameSequence[]) {
+  return sequences.slice(ENTRY_SEQUENCE_COUNT).map(getHeroEntryFrameUrls);
+}
