@@ -6,7 +6,7 @@ import {
   MAX_BACKGROUND_FRAME_LOADS,
   getFrameIndex,
   getOpeningFrameUrls,
-  getHeroEntryFrameUrls,
+  getEntrySequenceFrameUrls,
   getBackgroundSequenceFrameUrls,
   getPrefetchFrameIndices,
   getScrollDirection,
@@ -35,11 +35,20 @@ test("maps scroll progress and nearby requests to WebP frame URLs", () => {
   assert.deepEqual(getOpeningFrameUrls([sequence]), ["/frames/a/0001.webp"]);
 });
 
-test("preloads every scroll frame in the entry hero sequence", () => {
-  const heroFrames = getHeroEntryFrameUrls({ ...sequence, frameCount: 239 });
-  assert.equal(heroFrames.length, 239);
-  assert.equal(heroFrames[0], "/frames/a/0001.webp");
-  assert.equal(heroFrames.at(-1), "/frames/a/0239.webp");
+test("preloads every scroll frame in the first two entry sequences", () => {
+  const alternateSequence = {
+    ...sequence,
+    id: "b",
+    frameCount: 2,
+    framePath: (index: number) => `/frames/b/${String(index + 1).padStart(4, "0")}.webp`,
+  };
+  assert.deepEqual(getEntrySequenceFrameUrls([{ ...sequence, frameCount: 3 }, alternateSequence]), [
+    "/frames/a/0001.webp",
+    "/frames/a/0002.webp",
+    "/frames/a/0003.webp",
+    "/frames/b/0001.webp",
+    "/frames/b/0002.webp",
+  ]);
 });
 
 test("queues every non-hero sequence for background transfer", () => {
@@ -49,9 +58,12 @@ test("queues every non-hero sequence for background transfer", () => {
     frameCount: 2,
     framePath: (index: number) => `/frames/b/${String(index + 1).padStart(4, "0")}.webp`,
   };
-  assert.deepEqual(getBackgroundSequenceFrameUrls([{ ...sequence, frameCount: 3 }, alternateSequence]), [
-    "/frames/b/0001.webp",
-    "/frames/b/0002.webp",
+  assert.deepEqual(getBackgroundSequenceFrameUrls([
+    { ...sequence, frameCount: 3 },
+    alternateSequence,
+    { ...sequence, id: "c", frameCount: 1, framePath: () => "/frames/c/0001.webp" },
+  ]), [
+    "/frames/c/0001.webp",
   ]);
 });
 

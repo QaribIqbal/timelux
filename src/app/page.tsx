@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState } from "react";
 import { HERO_SEQUENCES } from "@/lib/heroAssets";
+import { getEntrySequenceFrameUrls } from "@/lib/frameSequence";
 import LuxuryPreloader from "@/components/ui/LuxuryPreloader";
 import Navbar from "@/components/ui/Navbar";
 import MasterScrollySection from "@/components/sections/MasterScrollySection";
@@ -11,6 +12,8 @@ import Footer from "@/components/ui/Footer";
 import MechanismSandboxModal from "@/components/modals/MechanismSandboxModal";
 import CommissionModal from "@/components/modals/CommissionModal";
 import AmbientAudio from "@/components/ui/AmbientAudio";
+
+const ENTRY_FRAME_COUNT = getEntrySequenceFrameUrls(HERO_SEQUENCES).length;
 
 export default function Home() {
   const [isMechanismOpen, setIsMechanismOpen] = useState(false);
@@ -28,7 +31,7 @@ export default function Home() {
 
   const handleHeroFrameSettled = useCallback(() => {
     setSettledHeroFrames((previous) =>
-      Math.min(HERO_SEQUENCES[0].frameCount, previous + 1)
+      Math.min(ENTRY_FRAME_COUNT, previous + 1)
     );
   }, []);
 
@@ -42,7 +45,7 @@ export default function Home() {
 
       <LuxuryPreloader
         settledHeroFrames={settledHeroFrames}
-        heroFrameCount={HERO_SEQUENCES[0].frameCount}
+        heroFrameCount={ENTRY_FRAME_COUNT}
         isHeroPreloadComplete={isHeroPreloadComplete}
       />
 

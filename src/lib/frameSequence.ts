@@ -11,6 +11,7 @@ export interface FrameSequence {
 export const FRAME_CACHE_LIMIT = 8;
 export const FRAME_PREFETCH_RADIUS = 4;
 export const MAX_BACKGROUND_FRAME_LOADS = 3;
+export const ENTRY_SEQUENCE_COUNT = 2;
 export const HERO_ENTRY_PRELOAD_CONCURRENCY = 6;
 export const BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY = 6;
 
@@ -59,6 +60,10 @@ export function getHeroEntryFrameUrls(sequence: FrameSequence) {
   );
 }
 
+export function getEntrySequenceFrameUrls(sequences: readonly FrameSequence[]) {
+  return sequences.slice(0, ENTRY_SEQUENCE_COUNT).flatMap(getHeroEntryFrameUrls);
+}
+
 export function getBackgroundSequenceFrameUrls(sequences: readonly FrameSequence[]) {
-  return sequences.slice(1).flatMap(getHeroEntryFrameUrls);
+  return sequences.slice(ENTRY_SEQUENCE_COUNT).flatMap(getHeroEntryFrameUrls);
 }

@@ -9,6 +9,7 @@ import {
   HERO_ENTRY_PRELOAD_CONCURRENCY,
   MAX_BACKGROUND_FRAME_LOADS,
   getBackgroundSequenceFrameUrls,
+  getEntrySequenceFrameUrls,
   getHeroEntryFrameUrls,
   getFrameIndex,
   getPrefetchFrameIndices,
@@ -166,15 +167,16 @@ export default function FrameSequenceScrubber({
 
   useEffect(() => {
     let cancelled = false;
-    const heroFrameUrls = getHeroEntryFrameUrls(HERO_SEQUENCES[0]);
+    const entryFrameUrls = getEntrySequenceFrameUrls(HERO_SEQUENCES);
+    const openingHeroFrameUrls = getHeroEntryFrameUrls(HERO_SEQUENCES[0]);
     let nextFrame = 0;
 
     const preloadWorker = async () => {
       while (!cancelled) {
         const frameIndex = nextFrame;
         nextFrame += 1;
-        if (frameIndex >= heroFrameUrls.length) return;
-        await loadFrame(heroFrameUrls[frameIndex]);
+        if (frameIndex >= entryFrameUrls.length) return;
+        await loadFrame(entryFrameUrls[frameIndex]);
         if (!cancelled) onHeroFrameSettled?.();
       }
     };
@@ -187,7 +189,9 @@ export default function FrameSequenceScrubber({
 
       // Keep the opening frames decoded for the first interaction after entry.
       await Promise.all(
-        heroFrameUrls.slice(0, FRAME_CACHE_LIMIT).map((url) => loadFrame(url))
+        openingHeroFrameUrls
+          .slice(0, FRAME_CACHE_LIMIT)
+          .map((url) => loadFrame(url))
       );
       if (!cancelled) onHeroPreloadComplete?.();
 
