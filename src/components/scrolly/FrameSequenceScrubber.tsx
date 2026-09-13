@@ -5,8 +5,10 @@ import { HERO_SEQUENCES } from "@/lib/heroAssets";
 import {
   FRAME_CACHE_LIMIT,
   FRAME_PREFETCH_RADIUS,
+  BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY,
   HERO_ENTRY_PRELOAD_CONCURRENCY,
   MAX_BACKGROUND_FRAME_LOADS,
+  getBackgroundSequenceFrameUrls,
   getHeroEntryFrameUrls,
   getFrameIndex,
   getPrefetchFrameIndices,
@@ -188,6 +190,30 @@ export default function FrameSequenceScrubber({
         heroFrameUrls.slice(0, FRAME_CACHE_LIMIT).map((url) => loadFrame(url))
       );
       if (!cancelled) onHeroPreloadComplete?.();
+
+      // Transfer the later sections without decoding them into the small in-memory
+      // frame cache. Their immutable URLs are then available from HTTP cache when
+      // their scroll sequence becomes active.
+      const backgroundUrls = getBackgroundSequenceFrameUrls(HERO_SEQUENCES);
+      let nextBackgroundFrame = 0;
+      const backgroundWorker = async () => {
+        while (!cancelled) {
+          const frameIndex = nextBackgroundFrame;
+          nextBackgroundFrame += 1;
+          if (frameIndex >= backgroundUrls.length) return;
+          try {
+            await fetch(backgroundUrls[frameIndex], { cache: "force-cache" });
+          } catch {
+            // A later scroll request retries a frame that could not be transferred.
+          }
+        }
+      };
+      void Promise.all(
+        Array.from(
+          { length: BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY },
+          backgroundWorker
+        )
+      );
     };
 
     void preloadHero();

@@ -7,6 +7,7 @@ import {
   getFrameIndex,
   getOpeningFrameUrls,
   getHeroEntryFrameUrls,
+  getBackgroundSequenceFrameUrls,
   getPrefetchFrameIndices,
   getScrollDirection,
   type FrameSequence,
@@ -39,6 +40,19 @@ test("preloads every scroll frame in the entry hero sequence", () => {
   assert.equal(heroFrames.length, 239);
   assert.equal(heroFrames[0], "/frames/a/0001.webp");
   assert.equal(heroFrames.at(-1), "/frames/a/0239.webp");
+});
+
+test("queues every non-hero sequence for background transfer", () => {
+  const alternateSequence = {
+    ...sequence,
+    id: "b",
+    frameCount: 2,
+    framePath: (index: number) => `/frames/b/${String(index + 1).padStart(4, "0")}.webp`,
+  };
+  assert.deepEqual(getBackgroundSequenceFrameUrls([{ ...sequence, frameCount: 3 }, alternateSequence]), [
+    "/frames/b/0001.webp",
+    "/frames/b/0002.webp",
+  ]);
 });
 
 test("bounds decoded frame memory and background request pressure", () => {

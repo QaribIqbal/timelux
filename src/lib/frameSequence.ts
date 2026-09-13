@@ -12,6 +12,7 @@ export const FRAME_CACHE_LIMIT = 8;
 export const FRAME_PREFETCH_RADIUS = 4;
 export const MAX_BACKGROUND_FRAME_LOADS = 3;
 export const HERO_ENTRY_PRELOAD_CONCURRENCY = 6;
+export const BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY = 6;
 
 export function getScrollDirection(currentProgress: number, previousProgress: number): -1 | 1 {
   return currentProgress < previousProgress ? -1 : 1;
@@ -56,4 +57,8 @@ export function getHeroEntryFrameUrls(sequence: FrameSequence) {
     { length: sequence.frameCount },
     (_, index) => sequence.framePath(index)
   );
+}
+
+export function getBackgroundSequenceFrameUrls(sequences: readonly FrameSequence[]) {
+  return sequences.slice(1).flatMap(getHeroEntryFrameUrls);
 }
