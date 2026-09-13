@@ -6,14 +6,18 @@ import { Volume2, VolumeX } from "lucide-react";
 const AUDIO_SOURCE = "/audio/watch-background-audio-loop.wav";
 const PLAYBACK_VOLUME = 0.38;
 
-export default function AmbientAudio() {
+interface AmbientAudioProps {
+  startRequested?: boolean;
+}
+
+export default function AmbientAudio({ startRequested = false }: AmbientAudioProps) {
   const contextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const setupPromiseRef = useRef<Promise<AudioContext | null> | null>(null);
   const userMutedRef = useRef(false);
   const unmountedRef = useRef(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const ensureAudioGraph = useCallback(() => {
@@ -76,6 +80,14 @@ export default function AmbientAudio() {
       return false;
     }
   }, [ensureAudioGraph]);
+
+  useEffect(() => {
+    if (!startRequested) return;
+    const timer = window.setTimeout(() => {
+      void attemptPlay();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [attemptPlay, startRequested]);
 
   useEffect(() => {
     unmountedRef.current = false;

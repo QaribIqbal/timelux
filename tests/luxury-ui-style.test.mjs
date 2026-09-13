@@ -58,12 +58,16 @@ test("collection product imagery is delivered at full visual quality", async () 
 test("ambient watch audio is configured as a looping track", async () => {
   const page = await readFile(new URL("../src/app/page.tsx", import.meta.url), "utf8");
   const audio = await readFile(new URL("../src/components/ui/AmbientAudio.tsx", import.meta.url), "utf8");
+  const preloader = await readFile(new URL("../src/components/ui/LuxuryPreloader.tsx", import.meta.url), "utf8");
   assert.match(page, /AmbientAudio/);
   assert.match(audio, /watch-background-audio-loop\.wav/);
   assert.match(audio, /fetch\(AUDIO_SOURCE/);
   assert.match(audio, /loop/);
   assert.match(audio, /aria-label=\{isMuted/);
   assert.match(audio, /setIsMuted/);
+  assert.match(page, /<AmbientAudio startRequested=\{loaderProgress >= 30\}/);
+  assert.match(preloader, /onProgressChange/);
+  assert.match(audio, /startRequested/);
 });
 
 test("ambient audio asset starts without a loop-boundary silence", async () => {

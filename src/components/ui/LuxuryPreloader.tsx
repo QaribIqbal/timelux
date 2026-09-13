@@ -7,12 +7,14 @@ interface LuxuryPreloaderProps {
   settledHeroFrames?: number;
   heroFrameCount: number;
   isHeroPreloadComplete: boolean;
+  onProgressChange?: (progress: number) => void;
 }
 
 export default function LuxuryPreloader({
   settledHeroFrames = 0,
   heroFrameCount,
   isHeroPreloadComplete,
+  onProgressChange,
 }: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
@@ -45,6 +47,10 @@ export default function LuxuryPreloader({
     }, 35);
     return () => clearInterval(interval);
   }, [targetProgress]);
+
+  useEffect(() => {
+    onProgressChange?.(loadingProgress);
+  }, [loadingProgress, onProgressChange]);
 
   useEffect(() => {
     if (loadingProgress < 100) return;

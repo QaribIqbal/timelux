@@ -23,6 +23,7 @@ export default function Home() {
   );
   const [settledHeroFrames, setSettledHeroFrames] = useState(0);
   const [isHeroPreloadComplete, setIsHeroPreloadComplete] = useState(false);
+  const [loaderProgress, setLoaderProgress] = useState(0);
 
   const handleSelectModel = (modelName: string) => {
     setPreselectedModel(modelName);
@@ -41,12 +42,13 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen bg-[var(--midnight-black)] text-[var(--headline-white)]">
-      <AmbientAudio />
+      <AmbientAudio startRequested={loaderProgress >= 30} />
 
       <LuxuryPreloader
         settledHeroFrames={settledHeroFrames}
         heroFrameCount={ENTRY_FRAME_COUNT}
         isHeroPreloadComplete={isHeroPreloadComplete}
+        onProgressChange={setLoaderProgress}
       />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
