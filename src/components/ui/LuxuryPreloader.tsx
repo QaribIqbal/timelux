@@ -8,6 +8,7 @@ interface LuxuryPreloaderProps {
   heroFrameCount: number;
   isHeroPreloadComplete: boolean;
   onProgressChange?: (progress: number) => void;
+  isSoundAudible?: boolean;
 }
 
 export default function LuxuryPreloader({
@@ -15,6 +16,7 @@ export default function LuxuryPreloader({
   heroFrameCount,
   isHeroPreloadComplete,
   onProgressChange,
+  isSoundAudible = false,
 }: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
@@ -63,6 +65,10 @@ export default function LuxuryPreloader({
 
   if (isUnmounted) return null;
 
+  const handleSoundToggle = () => {
+    window.dispatchEvent(new Event("timelux:toggle-sound"));
+  };
+
   return (
     <div
       aria-hidden={isDone}
@@ -84,6 +90,15 @@ export default function LuxuryPreloader({
         <p className="mt-3 text-[10px] sm:text-xs font-mono uppercase tracking-[0.25em] text-[var(--champagne-gold)]">CALIBRATING ATELIER · 28,800 VPH</p>
       </div>
       <div className="w-full max-w-sm flex flex-col items-center gap-3">
+        <button
+          type="button"
+          onClick={handleSoundToggle}
+          aria-label={isSoundAudible ? "Mute soundtrack" : "Enable soundtrack"}
+          aria-pressed={isSoundAudible}
+          className="rounded-full border border-[var(--champagne-gold)]/35 px-4 py-2 text-[9px] font-mono uppercase tracking-[0.18em] text-[var(--champagne-gold)] transition-colors hover:border-[var(--champagne-gold)] hover:bg-[var(--champagne-gold)]/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--champagne-gold)]"
+        >
+          {isSoundAudible ? "Mute soundtrack" : "Enable soundtrack"}
+        </button>
         <div className="w-full h-[1.5px] bg-[var(--steel-blue)]/40 overflow-hidden relative">
           <div className="h-full bg-[var(--champagne-gold)] transition-all duration-150 ease-out" style={{ width: `${loadingProgress}%` }} />
         </div>

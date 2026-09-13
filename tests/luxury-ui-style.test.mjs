@@ -65,9 +65,14 @@ test("ambient watch audio is configured as a looping track", async () => {
   assert.match(audio, /loop/);
   assert.match(audio, /aria-label=\{isMuted/);
   assert.match(audio, /setIsMuted/);
-  assert.match(page, /<AmbientAudio startRequested=\{loaderProgress >= 30\}/);
+  assert.match(page, /<AmbientAudio\s+startRequested=\{loaderProgress >= 30\}/);
+  assert.match(page, /onSoundStateChange=\{setIsSoundAudible\}/);
   assert.match(preloader, /onProgressChange/);
+  assert.match(preloader, /Enable soundtrack/);
+  assert.match(preloader, /timelux:toggle-sound/);
   assert.match(audio, /startRequested/);
+  assert.match(audio, /onSoundStateChange/);
+  assert.match(audio, /timelux:toggle-sound/);
 });
 
 test("ambient audio asset starts without a loop-boundary silence", async () => {

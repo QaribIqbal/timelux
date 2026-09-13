@@ -8,9 +8,13 @@ const PLAYBACK_VOLUME = 0.38;
 
 interface AmbientAudioProps {
   startRequested?: boolean;
+  onSoundStateChange?: (isAudible: boolean) => void;
 }
 
-export default function AmbientAudio({ startRequested = false }: AmbientAudioProps) {
+export default function AmbientAudio({
+  startRequested = false,
+  onSoundStateChange,
+}: AmbientAudioProps) {
   const contextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
@@ -53,7 +57,9 @@ export default function AmbientAudio({ startRequested = false }: AmbientAudioPro
       gainRef.current = gain;
       sourceRef.current = source;
       context.onstatechange = () => {
-        setIsPlaying(context.state === "running" && !userMutedRef.current);
+        const playing = context.state === "running" && !userMutedRef.current;
+        setIsPlaying(playing);
+        setIsMuted(!playing);
       };
       return context;
     })().catch(() => {
@@ -74,7 +80,7 @@ export default function AmbientAudio({ startRequested = false }: AmbientAudioPro
       if (gainRef.current) gainRef.current.gain.value = PLAYBACK_VOLUME;
       const playing = context.state === "running";
       setIsPlaying(playing);
-      setIsMuted(false);
+      setIsMuted(!playing);
       return playing;
     } catch {
       return false;
@@ -88,6 +94,47 @@ export default function AmbientAudio({ startRequested = false }: AmbientAudioPro
     }, 0);
     return () => window.clearTimeout(timer);
   }, [attemptPlay, startRequested]);
+
+  const handleToggleSound = useCallback(() => {
+    const gain = gainRef.current;
+    const context = contextRef.current;
+
+    if (isMuted || userMutedRef.current || context?.state !== "running") {
+      userMutedRef.current = false;
+      setIsMuted(false);
+      if (gain) gain.gain.value = PLAYBACK_VOLUME;
+
+      // Resume synchronously from the click/event stack so Safari treats this
+      // as a user gesture even while the decoded loop is still arriving.
+      if (context) {
+        void context.resume().then(() => {
+          const playing = context.state === "running";
+          setIsPlaying(playing);
+          setIsMuted(!playing);
+        }).catch(() => undefined);
+      } else {
+        void ensureAudioGraph();
+        void contextRef.current?.resume();
+        void attemptPlay();
+      }
+      return;
+    }
+
+    userMutedRef.current = true;
+    setIsMuted(true);
+    setIsPlaying(false);
+    if (gain) gain.gain.value = 0;
+  }, [attemptPlay, ensureAudioGraph, isMuted]);
+
+  useEffect(() => {
+    const handleLoaderSoundToggle = () => handleToggleSound();
+    window.addEventListener("timelux:toggle-sound", handleLoaderSoundToggle);
+    return () => window.removeEventListener("timelux:toggle-sound", handleLoaderSoundToggle);
+  }, [handleToggleSound]);
+
+  useEffect(() => {
+    onSoundStateChange?.(isPlaying && !isMuted);
+  }, [isMuted, isPlaying, onSoundStateChange]);
 
   useEffect(() => {
     unmountedRef.current = false;
@@ -137,24 +184,6 @@ export default function AmbientAudio({ startRequested = false }: AmbientAudioPro
       setupPromiseRef.current = null;
     };
   }, [attemptPlay, ensureAudioGraph]);
-
-  const handleToggleSound = () => {
-    const gain = gainRef.current;
-    const context = contextRef.current;
-
-    if (isMuted || userMutedRef.current || context?.state !== "running") {
-      userMutedRef.current = false;
-      setIsMuted(false);
-      if (gain) gain.gain.value = PLAYBACK_VOLUME;
-      void attemptPlay();
-      return;
-    }
-
-    userMutedRef.current = true;
-    setIsMuted(true);
-    setIsPlaying(false);
-    if (gain) gain.gain.value = 0;
-  };
 
   return (
     <button
