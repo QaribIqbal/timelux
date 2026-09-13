@@ -49,10 +49,10 @@ test("normal-scroll sections use the shared quiet panel treatment and palette", 
   assert.doesNotMatch(collection, /-translate-y-2/);
 });
 
-test("collection product imagery is delivered at full visual quality", async () => {
+test("collection film retains a high-quality WebP poster while video loads", async () => {
   const collection = await readFile(new URL("../src/components/sections/CollectionSection.tsx", import.meta.url), "utf8");
-  assert.match(collection, /quality=\{100\}/);
-  assert.match(collection, /sizes="\(max-width: 768px\) calc\(100vw - 3rem\), \(max-width: 1280px\) 30vw, 384px"/);
+  assert.match(collection, /poster="\/videos\/posters\/06-three-watch-collection\.c0ee4e9f\.webp"/);
+  assert.match(collection, /06-three-watch-collection\.mp4/);
 });
 
 test("ambient watch audio is configured as a looping track", async () => {
@@ -63,7 +63,7 @@ test("ambient watch audio is configured as a looping track", async () => {
   assert.match(audio, /watch-background-audio-loop\.wav/);
   assert.match(audio, /fetch\(AUDIO_SOURCE/);
   assert.match(audio, /loop/);
-  assert.match(audio, /aria-label=\{isMuted/);
+  assert.match(audio, /aria-label=\{isPlaying && !isMuted/);
   assert.match(audio, /setIsMuted/);
   assert.match(page, /<AmbientAudio\s+startRequested=\{loaderProgress >= 30\}/);
   assert.match(page, /onSoundStateChange=\{setIsSoundAudible\}/);
@@ -73,6 +73,7 @@ test("ambient watch audio is configured as a looping track", async () => {
   assert.match(audio, /startRequested/);
   assert.match(audio, /onSoundStateChange/);
   assert.match(audio, /timelux:toggle-sound/);
+  assert.match(audio, /const \[isMuted, setIsMuted\] = useState\(false\)/);
 });
 
 test("ambient audio asset starts without a loop-boundary silence", async () => {
@@ -83,13 +84,21 @@ test("ambient audio asset starts without a loop-boundary silence", async () => {
   assert.doesNotMatch(audio, /<audio/);
 });
 
-test("collection and craftsmanship use static WebP posters without video controls", async () => {
+test("collection and craftsmanship autoplay muted looping videos without controls", async () => {
   const collection = await readFile(new URL("../src/components/sections/CollectionSection.tsx", import.meta.url), "utf8");
   const craftsmanship = await readFile(new URL("../src/components/sections/CraftsmanshipSection.tsx", import.meta.url), "utf8");
-  assert.match(collection, /06-three-watch-collection\.c0ee4e9f\.webp/);
-  assert.match(craftsmanship, /07-macro-craftsmanship\.2d194427\.webp/);
-  assert.doesNotMatch(collection, /<video|autoPlay|video\.play|IntersectionObserver/);
-  assert.doesNotMatch(craftsmanship, /<video|autoPlay|video\.play|IntersectionObserver/);
+  assert.match(collection, /06-three-watch-collection\.mp4/);
+  assert.match(craftsmanship, /07-macro-craftsmanship\.mp4/);
+  assert.match(collection, /<video/);
+  assert.match(craftsmanship, /<video/);
+  assert.match(collection, /autoPlay/);
+  assert.match(craftsmanship, /autoPlay/);
+  assert.match(collection, /loop/);
+  assert.match(craftsmanship, /loop/);
+  assert.match(collection, /muted/);
+  assert.match(craftsmanship, /muted/);
+  assert.doesNotMatch(collection, /<video[\s\S]*?\scontrols(?:\s|=|>)/);
+  assert.doesNotMatch(craftsmanship, /<video[\s\S]*?\scontrols(?:\s|=|>)/);
 });
 
 test("does not deploy unused source MP4 files", async () => {

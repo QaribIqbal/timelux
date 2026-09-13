@@ -135,21 +135,24 @@ export default function CollectionSection({ onSelectModel }: CollectionSectionPr
           </p>
         </div>
 
-        {/* Static, high-quality collection poster: no autoplay or playback affordance. */}
+        {/* Silent looping film with no native playback controls. */}
         <div className="relative w-full max-w-4xl mx-auto h-[320px] sm:h-[440px] rounded-2xl overflow-hidden mb-16 border border-[var(--champagne-gold)]/30 bg-[var(--midnight-black)]">
-          <Image
-            src="/videos/posters/06-three-watch-collection.c0ee4e9f.webp"
-            alt="Three TIMELUX limited-edition watches"
-            fill
-            priority={false}
-            sizes="(max-width: 768px) calc(100vw - 3rem), 896px"
-            quality={100}
-            className="object-contain"
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster="/videos/posters/06-three-watch-collection.c0ee4e9f.webp"
+            aria-label="Three TIMELUX limited-edition watches"
+            className="absolute inset-0 h-full w-full object-contain"
             style={{
               backgroundColor: "var(--midnight-black)",
               filter: "contrast(1.08) brightness(1.02)",
             }}
-          />
+          >
+            <source src="/videos/optimized/06-three-watch-collection.mp4" type="video/mp4" />
+          </video>
 
           {/* Minimal hairline telemetry bar */}
           <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between pointer-events-none text-[10px] font-mono text-[var(--titanium-silver)] uppercase tracking-widest bg-[var(--midnight-black)]/80 px-4 py-2 rounded-full border border-[var(--titanium-silver)]/15">

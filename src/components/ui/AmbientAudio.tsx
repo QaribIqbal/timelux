@@ -21,7 +21,7 @@ export default function AmbientAudio({
   const setupPromiseRef = useRef<Promise<AudioContext | null> | null>(null);
   const userMutedRef = useRef(false);
   const unmountedRef = useRef(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const ensureAudioGraph = useCallback(() => {
@@ -189,9 +189,9 @@ export default function AmbientAudio({
     <button
       type="button"
       onClick={handleToggleSound}
-      aria-label={isMuted ? "Unmute background sound" : "Mute background sound"}
-      aria-pressed={isMuted}
-      title={isMuted ? "Soundtrack · Click to Play" : "Soundtrack · Playing"}
+      aria-label={isPlaying && !isMuted ? "Mute background sound" : "Play background sound"}
+      aria-pressed={isPlaying && !isMuted}
+      title={isPlaying && !isMuted ? "Soundtrack · Playing" : "Soundtrack · Click to Play"}
       className="fixed bottom-6 right-6 z-[60] group flex h-11 w-11 items-center justify-center rounded-full border border-[var(--champagne-gold)]/40 bg-[var(--midnight-black)]/90 text-[var(--champagne-gold)] shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:border-[var(--champagne-gold)] hover:bg-[var(--steel-blue)]"
     >
       {isPlaying && !isMuted && (

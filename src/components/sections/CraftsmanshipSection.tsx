@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 import { ArrowRight, Sparkles, Check, Gem, Award, ShieldCheck, Compass } from "lucide-react";
 
 interface CraftsmanshipSectionProps {
@@ -14,21 +13,24 @@ export default function CraftsmanshipSection({ onOpenCommission }: Craftsmanship
       id="craftsmanship"
       className="relative py-36 px-6 lg:px-12 bg-[var(--midnight-black)] z-20 border-t border-[var(--titanium-silver)]/15 overflow-hidden"
     >
-      {/* Static macro poster preserves the visual atmosphere without autoplay. */}
+      {/* Silent looping macro film with no native playback controls. */}
       <div className="absolute inset-0 opacity-25 pointer-events-none flex items-center justify-center">
-        <Image
-          src="/videos/posters/07-macro-craftsmanship.2d194427.webp"
-          alt=""
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          poster="/videos/posters/07-macro-craftsmanship.2d194427.webp"
           aria-hidden="true"
-          fill
-          sizes="100vw"
-          quality={100}
-          className="object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
           style={{
             filter: "contrast(1.15) brightness(1.02)",
             backgroundColor: "var(--midnight-black)",
           }}
-        />
+        >
+          <source src="/videos/optimized/07-macro-craftsmanship.mp4" type="video/mp4" />
+        </video>
       </div>
 
       <div className="max-w-5xl mx-auto w-full relative z-10">
