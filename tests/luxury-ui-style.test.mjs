@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 test("luxury utility styles use strict palette custom properties and preserve neutral panel", async () => {
@@ -85,4 +85,9 @@ test("collection and craftsmanship use static WebP posters without video control
   assert.match(craftsmanship, /07-macro-craftsmanship\.2d194427\.webp/);
   assert.doesNotMatch(collection, /<video|autoPlay|video\.play|IntersectionObserver/);
   assert.doesNotMatch(craftsmanship, /<video|autoPlay|video\.play|IntersectionObserver/);
+});
+
+test("does not deploy unused source MP4 files", async () => {
+  const publicVideos = await readdir(new URL("../public/videos/", import.meta.url));
+  assert.deepEqual(publicVideos.filter((file) => file.endsWith(".mp4")), []);
 });
