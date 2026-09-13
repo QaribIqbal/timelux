@@ -1,6 +1,6 @@
 import type { FrameSequence } from "@/lib/frameSequence";
 
-const HERO_SEQUENCE_VERSION = "20260912";
+const HERO_SEQUENCE_VERSION = "20260913";
 
 function createFrameSequence(
   id: string,

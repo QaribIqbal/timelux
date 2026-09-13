@@ -14,6 +14,7 @@ import { HERO_SEQUENCES } from "../src/lib/heroAssets.ts";
 import { HERO_BEAT_LABELS } from "../src/lib/heroAssets.ts";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const sequence: FrameSequence = {
   id: "a",
@@ -51,6 +52,16 @@ test("publishes complete WebP hero sequences", () => {
     existsSync(fileURLToPath(new URL(`../public${HERO_SEQUENCES[0].framePath(0)}`, import.meta.url))),
     true
   );
+});
+
+test("delivers runtime hero frames at a viewport-appropriate width", async () => {
+  const frameUrl = HERO_SEQUENCES[0].framePath(0);
+  const framePath = fileURLToPath(new URL(`../public${frameUrl}`, import.meta.url));
+  const metadata = await sharp(framePath).metadata();
+
+  assert.match(frameUrl, /\/hero-sequences\/20260913\//);
+  assert.equal(metadata.width, 1920);
+  assert.equal(metadata.height, 1080);
 });
 
 test("uses reader-facing names for the hero navigation", () => {
