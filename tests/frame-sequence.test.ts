@@ -13,6 +13,7 @@ import {
 import { HERO_SEQUENCES } from "../src/lib/heroAssets.ts";
 import { HERO_BEAT_LABELS } from "../src/lib/heroAssets.ts";
 import { existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
@@ -62,6 +63,19 @@ test("delivers runtime hero frames at a viewport-appropriate width", async () =>
   assert.match(frameUrl, /\/hero-sequences\/20260913\//);
   assert.equal(metadata.width, 1920);
   assert.equal(metadata.height, 1080);
+});
+
+test("sets explicit Netlify edge caching for versioned frame sequences", () => {
+  const netlifyConfig = readFileSync(
+    fileURLToPath(new URL("../netlify.toml", import.meta.url)),
+    "utf8"
+  );
+
+  assert.match(netlifyConfig, /for = "\/hero-sequences\/\*"/);
+  assert.match(
+    netlifyConfig,
+    /Netlify-CDN-Cache-Control = "public, max-age=31536000, immutable"/
+  );
 });
 
 test("uses reader-facing names for the hero navigation", () => {
