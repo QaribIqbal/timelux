@@ -8,13 +8,15 @@ import { ArrowRight, Play } from "lucide-react";
 interface MasterScrollySectionProps {
   onOpenMechanism: () => void;
   onOpenCommission: () => void;
-  onOpeningFrameSettled?: (beatIndex: number) => void;
+  onHeroFrameSettled?: () => void;
+  onHeroPreloadComplete?: () => void;
 }
 
 export default function MasterScrollySection({
   onOpenMechanism,
   onOpenCommission,
-  onOpeningFrameSettled,
+  onHeroFrameSettled,
+  onHeroPreloadComplete,
 }: MasterScrollySectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
@@ -93,7 +95,8 @@ export default function MasterScrollySection({
           <FrameSequenceScrubber
             progress={scrollProgress}
             onActiveBeatChange={setActiveBeat}
-            onOpeningFrameSettled={onOpeningFrameSettled}
+            onHeroFrameSettled={onHeroFrameSettled}
+            onHeroPreloadComplete={onHeroPreloadComplete}
           />
         </div>
 

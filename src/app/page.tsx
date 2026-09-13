@@ -18,25 +18,33 @@ export default function Home() {
   const [preselectedModel, setPreselectedModel] = useState<string | undefined>(
     undefined
   );
-  const [settledOpeningFrames, setSettledOpeningFrames] = useState(0);
+  const [settledHeroFrames, setSettledHeroFrames] = useState(0);
+  const [isHeroPreloadComplete, setIsHeroPreloadComplete] = useState(false);
 
   const handleSelectModel = (modelName: string) => {
     setPreselectedModel(modelName);
     setIsCommissionOpen(true);
   };
 
-  const handleOpeningFrameSettled = useCallback(() => {
-    setSettledOpeningFrames((previous) =>
-      Math.min(HERO_SEQUENCES.length, previous + 1)
+  const handleHeroFrameSettled = useCallback(() => {
+    setSettledHeroFrames((previous) =>
+      Math.min(HERO_SEQUENCES[0].frameCount, previous + 1)
     );
+  }, []);
+
+  const handleHeroPreloadComplete = useCallback(() => {
+    setIsHeroPreloadComplete(true);
   }, []);
 
   return (
     <main className="relative min-h-screen bg-[var(--midnight-black)] text-[var(--headline-white)]">
       <AmbientAudio />
 
-      {/* Luxury Horology Preloader releases only after every opening hero frame settles. */}
-      <LuxuryPreloader settledOpeningFrames={settledOpeningFrames} />
+      <LuxuryPreloader
+        settledHeroFrames={settledHeroFrames}
+        heroFrameCount={HERO_SEQUENCES[0].frameCount}
+        isHeroPreloadComplete={isHeroPreloadComplete}
+      />
 
       {/* Apple-Style Minimal Fixed Glassmorphic Navbar */}
       <Navbar
@@ -48,7 +56,8 @@ export default function Home() {
       <MasterScrollySection
         onOpenMechanism={() => setIsMechanismOpen(true)}
         onOpenCommission={() => setIsCommissionOpen(true)}
-        onOpeningFrameSettled={handleOpeningFrameSettled}
+        onHeroFrameSettled={handleHeroFrameSettled}
+        onHeroPreloadComplete={handleHeroPreloadComplete}
       />
 
       {/* SECTION 5: THE COLLECTION — CHOOSE YOUR EXPRESSION (Normal Scroll) */}

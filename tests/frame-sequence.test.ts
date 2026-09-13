@@ -6,6 +6,7 @@ import {
   MAX_BACKGROUND_FRAME_LOADS,
   getFrameIndex,
   getOpeningFrameUrls,
+  getHeroEntryFrameUrls,
   getPrefetchFrameIndices,
   getScrollDirection,
   type FrameSequence,
@@ -31,6 +32,13 @@ test("maps scroll progress and nearby requests to WebP frame URLs", () => {
   assert.deepEqual(getPrefetchFrameIndices(4, 10, 2, 1), [4, 5, 6, 3, 2]);
   assert.deepEqual(getPrefetchFrameIndices(4, 10, 2, -1), [4, 3, 2, 5, 6]);
   assert.deepEqual(getOpeningFrameUrls([sequence]), ["/frames/a/0001.webp"]);
+});
+
+test("preloads every scroll frame in the entry hero sequence", () => {
+  const heroFrames = getHeroEntryFrameUrls({ ...sequence, frameCount: 239 });
+  assert.equal(heroFrames.length, 239);
+  assert.equal(heroFrames[0], "/frames/a/0001.webp");
+  assert.equal(heroFrames.at(-1), "/frames/a/0239.webp");
 });
 
 test("bounds decoded frame memory and background request pressure", () => {

@@ -1,28 +1,34 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { HERO_SEQUENCES } from "@/lib/heroAssets";
 import { isHeroReadyForEntry } from "@/lib/heroLoading";
 
 interface LuxuryPreloaderProps {
-  settledOpeningFrames?: number;
+  settledHeroFrames?: number;
+  heroFrameCount: number;
+  isHeroPreloadComplete: boolean;
 }
 
-export default function LuxuryPreloader({ settledOpeningFrames = 0 }: LuxuryPreloaderProps) {
+export default function LuxuryPreloader({
+  settledHeroFrames = 0,
+  heroFrameCount,
+  isHeroPreloadComplete,
+}: LuxuryPreloaderProps) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [isUnmounted, setIsUnmounted] = useState(false);
   const isFullyCalibrated = isHeroReadyForEntry(
-    settledOpeningFrames,
-    HERO_SEQUENCES.length
+    settledHeroFrames,
+    heroFrameCount,
+    isHeroPreloadComplete
   );
   const targetProgress = isFullyCalibrated
     ? 100
     : Math.min(
         99,
         Math.round(
-          (Math.min(settledOpeningFrames, HERO_SEQUENCES.length) /
-            HERO_SEQUENCES.length) *
+          (Math.min(settledHeroFrames, heroFrameCount) /
+            heroFrameCount) *
             100
         )
       );

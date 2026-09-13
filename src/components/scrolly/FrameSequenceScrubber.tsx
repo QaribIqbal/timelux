@@ -5,7 +5,9 @@ import { HERO_SEQUENCES } from "@/lib/heroAssets";
 import {
   FRAME_CACHE_LIMIT,
   FRAME_PREFETCH_RADIUS,
+  HERO_ENTRY_PRELOAD_CONCURRENCY,
   MAX_BACKGROUND_FRAME_LOADS,
+  getHeroEntryFrameUrls,
   getFrameIndex,
   getPrefetchFrameIndices,
   getScrollDirection,
@@ -16,7 +18,8 @@ interface FrameSequenceScrubberProps {
   progress: number;
   className?: string;
   onActiveBeatChange?: (beatIndex: number) => void;
-  onOpeningFrameSettled?: (beatIndex: number) => void;
+  onHeroFrameSettled?: () => void;
+  onHeroPreloadComplete?: () => void;
 }
 
 function getActiveBeatIndex(progress: number) {
@@ -31,7 +34,8 @@ export default function FrameSequenceScrubber({
   progress,
   className = "",
   onActiveBeatChange,
-  onOpeningFrameSettled,
+  onHeroFrameSettled,
+  onHeroPreloadComplete,
 }: FrameSequenceScrubberProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cacheRef = useRef(new Map<string, HTMLImageElement>());
@@ -41,7 +45,6 @@ export default function FrameSequenceScrubber({
   const criticalRequestRef = useRef<Promise<void> | null>(null);
   const pendingTargetRef = useRef<{ sequence: FrameSequence; frameIndex: number } | null>(null);
   const previousProgressRef = useRef(progress);
-  const openingFrameNotifiedRef = useRef(new Set<number>());
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const activeBeatIndex = getActiveBeatIndex(progress);
 
@@ -160,14 +163,38 @@ export default function FrameSequenceScrubber({
   }, []);
 
   useEffect(() => {
-    HERO_SEQUENCES.forEach((sequence, index) => {
-      void loadFrame(sequence.framePath(0)).then(() => {
-        if (openingFrameNotifiedRef.current.has(index)) return;
-        openingFrameNotifiedRef.current.add(index);
-        onOpeningFrameSettled?.(index);
-      });
-    });
-  }, [loadFrame, onOpeningFrameSettled]);
+    let cancelled = false;
+    const heroFrameUrls = getHeroEntryFrameUrls(HERO_SEQUENCES[0]);
+    let nextFrame = 0;
+
+    const preloadWorker = async () => {
+      while (!cancelled) {
+        const frameIndex = nextFrame;
+        nextFrame += 1;
+        if (frameIndex >= heroFrameUrls.length) return;
+        await loadFrame(heroFrameUrls[frameIndex]);
+        if (!cancelled) onHeroFrameSettled?.();
+      }
+    };
+
+    const preloadHero = async () => {
+      await Promise.all(
+        Array.from({ length: HERO_ENTRY_PRELOAD_CONCURRENCY }, preloadWorker)
+      );
+      if (cancelled) return;
+
+      // Keep the opening frames decoded for the first interaction after entry.
+      await Promise.all(
+        heroFrameUrls.slice(0, FRAME_CACHE_LIMIT).map((url) => loadFrame(url))
+      );
+      if (!cancelled) onHeroPreloadComplete?.();
+    };
+
+    void preloadHero();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadFrame, onHeroFrameSettled, onHeroPreloadComplete]);
 
   useEffect(() => {
     latestProgressRef.current = progress;

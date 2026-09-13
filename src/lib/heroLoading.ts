@@ -1,6 +1,11 @@
 export function isHeroReadyForEntry(
-  settledOpeningFrameCount: number,
-  heroBeatCount: number
+  settledHeroFrameCount: number,
+  heroFrameCount: number,
+  isHeroPreloadComplete: boolean
 ) {
-  return heroBeatCount > 0 && settledOpeningFrameCount >= heroBeatCount;
+  return (
+    isHeroPreloadComplete &&
+    heroFrameCount > 0 &&
+    settledHeroFrameCount >= heroFrameCount
+  );
 }
