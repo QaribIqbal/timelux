@@ -11,7 +11,8 @@ export interface FrameSequence {
 export const FRAME_CACHE_LIMIT = 8;
 export const FRAME_PREFETCH_RADIUS = 4;
 export const MAX_BACKGROUND_FRAME_LOADS = 3;
-export const ENTRY_SEQUENCE_COUNT = 2;
+export const ENTRY_SEQUENCE_COUNT = 4;
+export const ENTRY_FINAL_SEQUENCE_RATIO = 0.5;
 export const HERO_ENTRY_PRELOAD_CONCURRENCY = 6;
 export const BACKGROUND_SEQUENCE_PRELOAD_CONCURRENCY = 6;
 
@@ -61,13 +62,36 @@ export function getHeroEntryFrameUrls(sequence: FrameSequence) {
 }
 
 export function getEntrySequenceFrameUrls(sequences: readonly FrameSequence[]) {
-  return sequences.slice(0, ENTRY_SEQUENCE_COUNT).flatMap(getHeroEntryFrameUrls);
+  const completeSequences = sequences
+    .slice(0, ENTRY_SEQUENCE_COUNT)
+    .flatMap(getHeroEntryFrameUrls);
+  const partialSequence = sequences[ENTRY_SEQUENCE_COUNT];
+  if (!partialSequence) return completeSequences;
+
+  const partialFrameCount = Math.ceil(
+    partialSequence.frameCount * ENTRY_FINAL_SEQUENCE_RATIO
+  );
+  return [
+    ...completeSequences,
+    ...getHeroEntryFrameUrls(partialSequence).slice(0, partialFrameCount),
+  ];
 }
 
 export function getBackgroundSequenceFrameUrls(sequences: readonly FrameSequence[]) {
-  return sequences.slice(ENTRY_SEQUENCE_COUNT).flatMap(getHeroEntryFrameUrls);
+  return getBackgroundSequenceFrameGroups(sequences).flat();
 }
 
 export function getBackgroundSequenceFrameGroups(sequences: readonly FrameSequence[]) {
-  return sequences.slice(ENTRY_SEQUENCE_COUNT).map(getHeroEntryFrameUrls);
+  const partialSequence = sequences[ENTRY_SEQUENCE_COUNT];
+  const partialFrameCount = partialSequence
+    ? Math.ceil(partialSequence.frameCount * ENTRY_FINAL_SEQUENCE_RATIO)
+    : 0;
+  const partialRemainder = partialSequence
+    ? getHeroEntryFrameUrls(partialSequence).slice(partialFrameCount)
+    : [];
+
+  return [
+    partialRemainder,
+    ...sequences.slice(ENTRY_SEQUENCE_COUNT + 1).map(getHeroEntryFrameUrls),
+  ].filter((urls) => urls.length > 0);
 }

@@ -90,4 +90,9 @@ test("collection and craftsmanship use static WebP posters without video control
 test("does not deploy unused source MP4 files", async () => {
   const publicVideos = await readdir(new URL("../public/videos/", import.meta.url));
   assert.deepEqual(publicVideos.filter((file) => file.endsWith(".mp4")), []);
+  const optimizedVideos = await readdir(new URL("../public/videos/optimized/", import.meta.url));
+  assert.deepEqual(optimizedVideos.sort(), [
+    "06-three-watch-collection.mp4",
+    "07-macro-craftsmanship.mp4",
+  ]);
 });

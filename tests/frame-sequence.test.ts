@@ -15,6 +15,7 @@ import {
 } from "../src/lib/frameSequence.ts";
 import { HERO_SEQUENCES } from "../src/lib/heroAssets.ts";
 import { HERO_BEAT_LABELS } from "../src/lib/heroAssets.ts";
+import { OPTIONAL_VIDEO_PRELOAD_URLS } from "../src/lib/videoAssets.ts";
 import { existsSync } from "node:fs";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -36,23 +37,34 @@ test("maps scroll progress and nearby requests to WebP frame URLs", () => {
   assert.deepEqual(getOpeningFrameUrls([sequence]), ["/frames/a/0001.webp"]);
 });
 
-test("preloads every scroll frame in the first two entry sequences", () => {
-  const alternateSequence = {
+test("preloads four complete sequences and half of the fifth before entry", () => {
+  const makeSequence = (id: string, frameCount: number): FrameSequence => ({
     ...sequence,
-    id: "b",
-    frameCount: 2,
-    framePath: (index: number) => `/frames/b/${String(index + 1).padStart(4, "0")}.webp`,
-  };
-  assert.deepEqual(getEntrySequenceFrameUrls([{ ...sequence, frameCount: 3 }, alternateSequence]), [
+    id,
+    frameCount,
+    framePath: (index: number) => `/frames/${id}/${String(index + 1).padStart(4, "0")}.webp`,
+  });
+  assert.deepEqual(getEntrySequenceFrameUrls([
+    { ...sequence, frameCount: 3 },
+    makeSequence("b", 2),
+    makeSequence("c", 2),
+    makeSequence("d", 1),
+    makeSequence("e", 3),
+  ]), [
     "/frames/a/0001.webp",
     "/frames/a/0002.webp",
     "/frames/a/0003.webp",
     "/frames/b/0001.webp",
     "/frames/b/0002.webp",
+    "/frames/c/0001.webp",
+    "/frames/c/0002.webp",
+    "/frames/d/0001.webp",
+    "/frames/e/0001.webp",
+    "/frames/e/0002.webp",
   ]);
 });
 
-test("queues every non-hero sequence for background transfer", () => {
+test("queues the remaining half of the fifth sequence for background transfer", () => {
   const alternateSequence = {
     ...sequence,
     id: "b",
@@ -63,8 +75,10 @@ test("queues every non-hero sequence for background transfer", () => {
     { ...sequence, frameCount: 3 },
     alternateSequence,
     { ...sequence, id: "c", frameCount: 1, framePath: () => "/frames/c/0001.webp" },
+    { ...sequence, id: "d", frameCount: 1, framePath: () => "/frames/d/0001.webp" },
+    { ...sequence, id: "e", frameCount: 3, framePath: (index: number) => `/frames/e/${String(index + 1).padStart(4, "0")}.webp` },
   ]), [
-    "/frames/c/0001.webp",
+    "/frames/e/0003.webp",
   ]);
 });
 
@@ -84,9 +98,19 @@ test("starts later sections in parallel background groups", () => {
   assert.deepEqual(getBackgroundSequenceFrameGroups([
     { ...sequence, frameCount: 1 },
     { ...sequence, id: "entry-two", frameCount: 1, framePath: () => "/frames/entry-two/0001.webp" },
+    { ...sequence, id: "entry-three", frameCount: 1, framePath: () => "/frames/entry-three/0001.webp" },
+    { ...sequence, id: "entry-four", frameCount: 1, framePath: () => "/frames/entry-four/0001.webp" },
+    { ...sequence, id: "entry-five", frameCount: 1, framePath: () => "/frames/entry-five/0001.webp" },
     sequenceB,
     sequenceC,
   ]), [["/frames/b/0001.webp"], ["/frames/c/0001.webp"]]);
+});
+
+test("defers optimized optional videos until after frame sequences", () => {
+  assert.deepEqual(OPTIONAL_VIDEO_PRELOAD_URLS, [
+    "/videos/optimized/06-three-watch-collection.mp4",
+    "/videos/optimized/07-macro-craftsmanship.mp4",
+  ]);
 });
 
 test("bounds decoded frame memory and background request pressure", () => {

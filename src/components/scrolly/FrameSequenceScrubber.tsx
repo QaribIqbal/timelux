@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HERO_SEQUENCES } from "@/lib/heroAssets";
+import { OPTIONAL_VIDEO_PRELOAD_URLS } from "@/lib/videoAssets";
 import {
   FRAME_CACHE_LIMIT,
   FRAME_PREFETCH_RADIUS,
@@ -222,7 +223,20 @@ export default function FrameSequenceScrubber({
           Array.from({ length: workersPerSequence }, backgroundWorker)
         );
       };
-      void Promise.all(backgroundGroups.map(preloadBackgroundGroup));
+      const preloadOptionalVideos = async () => {
+        await Promise.all(
+          OPTIONAL_VIDEO_PRELOAD_URLS.map(async (url) => {
+            try {
+              await fetch(url, { cache: "force-cache" });
+            } catch {
+              // The visual sections keep their WebP posters if an optional video fails.
+            }
+          })
+        );
+      };
+      void Promise.all(backgroundGroups.map(preloadBackgroundGroup)).then(() => {
+        if (!cancelled) void preloadOptionalVideos();
+      });
     };
 
     void preloadHero();
